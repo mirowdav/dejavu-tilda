@@ -386,9 +386,10 @@
 
   /* ---------- карточка основного товара ---------- */
 
+  // На сайте два вида блоков каталога: старый (t-store__) и новый (t-catalog__), разметка у них одинаковая
   function enhanceProductCards() {
-    document.querySelectorAll('.t-store__prod-popup__btn-wrapper').forEach(function (btnWrap) {
-      var card = btnWrap.closest('.js-store-product, .t-store__product-snippet, .t-store__product-popup');
+    document.querySelectorAll('.t-store__prod-popup__btn-wrapper, .t-catalog__prod-popup__btn-wrapper').forEach(function (btnWrap) {
+      var card = btnWrap.closest('.js-store-product, .js-catalog-product, .t-store__product-snippet, .t-catalog__product-snippet, .t-store__product-popup, .t-catalog__product-popup');
       if (!card || card.hasAttribute('data-dv-done')) return;
       card.setAttribute('data-dv-done', '1');
 
@@ -399,7 +400,7 @@
 
       var shelf = renderShelf(T.shelfTitle, 'product');
       shelf.id = 'dv-addons-' + Math.random().toString(36).slice(2, 8);
-      var info = card.querySelector('.t-store__prod-popup__info') || btnWrap.parentNode;
+      var info = card.querySelector('.t-store__prod-popup__info, .t-catalog__prod-popup__info') || btnWrap.parentNode;
       info.appendChild(shelf);
 
       plaque.addEventListener('click', function (e) {
