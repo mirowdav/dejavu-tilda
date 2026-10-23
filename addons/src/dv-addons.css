@@ -65,7 +65,9 @@
 .dv-card_incart .dv-card__badge { display: block; }
 
 /* блок в корзине */
-.dv-cart { margin: 16px 0; padding-top: 8px; border-top: 1px solid var(--dv-line); }
+.dv-cart { margin: 16px 0; padding-top: 8px; }
+/* в боковой корзине линию под товарами рисует сама Tilda (.t706__sidebar-products), на странице корзины — нет */
+.dv-cart_cartpage { border-top: 1px solid var(--dv-line); }
 .dv-cart .dv-shelf { margin: 8px 0 16px; }
 /* десктоп (порог Tilda — 960px): допы предлагаем в боковой корзине, на странице с формой не повторяем */
 @media (min-width: 961px) {
