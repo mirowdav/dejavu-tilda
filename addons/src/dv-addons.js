@@ -2,7 +2,7 @@
  * Dejavu Flowers — допы и допродажи для корзины Tilda (t706).
  *
  * Подключение в Tilda (T123, на всех страницах):
- *   <script src="https://cdn.jsdelivr.net/gh/<user>/dejavu-addons@<tag>/src/dv-addons.js" defer></script>
+ *   <script src="https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@<tag>/addons/src/dv-addons.js" defer></script>
  *
  * Переопределить настройки можно до подключения скрипта:
  *   <script>window.DV_ADDONS_CONFIG = { dataUrl: 'https://.../addons.json' };</script>
