@@ -67,15 +67,9 @@
 /* блок в корзине */
 .dv-cart { margin: 16px 0; padding-top: 8px; border-top: 1px solid var(--dv-line); }
 .dv-cart .dv-shelf { margin: 8px 0 16px; }
-.dv-cart__next { width: 100%; }
-.t706__cartpage:not(.dv-step1) .dv-cart__next { display: none; }
+/* десктоп (порог Tilda — 960px): допы предлагаем в боковой корзине, на странице с формой не повторяем */
 @media (min-width: 961px) {
-  .t706__cartpage.dv-step1 .t706__cartpage-form { display: none !important; }
-  .t706__cartpage.dv-step1 .t706__cartpage-info { margin: 0 auto; float: none; }
-}
-@media (max-width: 960px) {
-  /* на мобильном Tilda сама делит оформление на 2 шага */
-  .dv-cart__next { display: none !important; }
+  .dv-cart_cartpage { display: none; }
 }
 
 /* модалки */

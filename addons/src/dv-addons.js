@@ -24,8 +24,6 @@
     currency: 'AED',
     // показывать попап после добавления основного товара
     upsellPopup: true,
-    // на десктопе прятать форму на странице корзины, пока не нажата «Перейти к оформлению»
-    twoStepDesktop: true,
     // подсказка размера под переключателем: { 'Размер': { 'M — 51 шт.': '40 × 35 см' } }
     variantHints: {},
     texts: {
@@ -381,7 +379,9 @@
     content.querySelector('.dv-upsell__continue').addEventListener('click', close);
     content.querySelector('.dv-upsell__checkout').addEventListener('click', function () {
       close();
-      if (typeof window.tcart__openCart === 'function') window.tcart__openCart();
+      // сразу к форме: допы покупатель только что видел в попапе
+      if (typeof window.tcart__openCartFullscreen === 'function') window.tcart__openCartFullscreen();
+      else if (typeof window.tcart__openCart === 'function') window.tcart__openCart();
     });
   }
 
@@ -441,11 +441,6 @@
       if (!list || (list.nextElementSibling && list.nextElementSibling.classList.contains('dv-cart'))) return;
       var block = el('<div class="dv-cart dv-cart_' + pair[1] + '"></div>');
       block.appendChild(renderShelf(T.cartTitle, 'cart'));
-      if (pair[1] === 'cartpage' && CFG.twoStepDesktop) {
-        var next = el('<button type="button" class="dv-btn dv-cart__next">' + esc(T.toCheckout) + '</button>');
-        next.addEventListener('click', openCheckoutStep);
-        block.appendChild(next);
-      }
       list.parentNode.insertBefore(block, list.nextSibling);
     });
     hideAddonSku();
@@ -462,20 +457,6 @@
         if (o.textContent.trim() === p.sku) o.style.display = 'none';
       });
     });
-  }
-
-  function setCheckoutStep(isFormStep) {
-    var page = document.querySelector('.t706__cartpage');
-    if (page) page.classList.toggle('dv-step1', !isFormStep);
-  }
-
-  function openCheckoutStep() {
-    setCheckoutStep(true);
-    // то же, что делает Tilda на мобильном по кнопке «Оформить заказ»
-    window.tcart_issecondstep = true;
-    if (typeof window.tcart__updateDelivery === 'function') window.tcart__updateDelivery();
-    var form = document.querySelector('.t706__cartpage-form');
-    if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   /* ---------- перехваты Tilda ---------- */
@@ -502,11 +483,10 @@
       };
     });
 
-    // полноэкранная страница корзины — шаг 1: допы, шаг 2: форма
-    document.addEventListener('fullscreenCartOpened', function () {
-      enhanceCart();
-      if (CFG.twoStepDesktop && !window.tcart_isMobile) setCheckoutStep(false);
-    });
+    // Шаги оформления — штатные Tilda, свой шаг не добавляем:
+    //  десктоп: боковая корзина (товары + допы) → «Оформить заказ» → страница с формой (допов там нет, см. CSS);
+    //  мобильный: сразу страница корзины, форма спрятана за «Оформить заказ», допы над ней.
+    document.addEventListener('fullscreenCartOpened', enhanceCart);
   }
 
   /* ---------- старт ---------- */
