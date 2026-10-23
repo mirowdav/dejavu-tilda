@@ -370,6 +370,7 @@
   }
 
   function openUpsellPopup() {
+    if (document.querySelector('.dv-modal_upsell')) return;
     var content = el('<div class="dv-upsell"><div class="dv-upsell__title">' + esc(T.popupTitle) + '</div></div>');
     content.appendChild(renderShelf(null, 'popup'));
     content.appendChild(el('<div class="dv-upsell__actions">' +

@@ -27,6 +27,25 @@
 <script src="https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.0/addons/src/dv-addons.js" defer></script>
 ```
 
+### Тест на боевом сайте
+
+Страницы товаров (`/tproduct/...`) строятся по общему шаблону каталога, поэтому скрипт на отдельной тестовой странице до них не дотягивается. Для теста ставим в «Настройки сайта → Вставка кода → перед `</body>`» загрузчик, который включает допы только у того, кто открыл сайт с `?dvtest=1`. Выключить: `?dvtest=0`.
+
+```html
+<script>
+(function () {
+  try {
+    if (/[?&]dvtest=1/.test(location.search)) localStorage.setItem('dvtest', '1');
+    if (/[?&]dvtest=0/.test(location.search)) localStorage.removeItem('dvtest');
+    if (!localStorage.getItem('dvtest')) return;
+  } catch (e) { return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.1/addons/src/dv-addons.js';
+  document.body.appendChild(s);
+})();
+</script>
+```
+
 CSS и `data/addons.json` скрипт подтягивает сам, относительно своего адреса. jsDelivr кэширует ветку `@main` до 12 часов, поэтому на проде подключаем по тегу (`@v0.1.0`) и при релизе ставим новый тег (теги общие на весь репозиторий).
 
 ## Данные (`data/addons.json`)
@@ -54,9 +73,10 @@ CSS и `data/addons.json` скрипт подтягивает сам, относ
 
 ## Что проверить на живом сайте
 
-- [ ] Серверная сверка цен Tilda (`api/getpriceproducts`, раз в 3 часа и при оплате) не выкидывает позиции без `uid`. С localhost это не проверить: API отвечает 404.
+- [x] Серверная сверка цен Tilda (`api/getpriceproducts`) позиции без `uid` не трогает: возвращает в `good` только каталожные товары, `bad` пустой. Значит, и цену допа сервер не проверяет — сверять в n8n по вебхуку заказа.
+- [x] Добавление из попапа и из корзины на проде работает, бабл Nolim NLM077 не ломается.
+- [x] Новый блок каталога (`t-catalog__`) на страницах `/tproduct/...` поддержан.
 - [ ] Заказ с допами доходит в заявку и в Stripe с правильной суммой.
-- [ ] Модуль Nolim NLM077 тоже оборачивает `tcart__addProduct`; цепочка работает в тестах, но на проде проверить порядок загрузки.
 
 ## Тест локально
 
