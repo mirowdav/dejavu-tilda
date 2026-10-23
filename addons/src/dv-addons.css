@@ -11,7 +11,7 @@
 }
 
 .dv-shelf, .dv-modal, .dv-hint, .dv-variant-hint, .dv-cart,
-.dv-btn, .dv-tab, .dv-chip, .dv-digits { font-family: var(--dv-font); }
+.dv-btn, .dv-chip, .dv-digits { font-family: var(--dv-font); }
 
 .dv-noscroll, .dv-noscroll body { overflow: hidden !important; }
 .dv-modal *, .dv-shelf *, .dv-cart * { box-sizing: border-box; }
@@ -38,19 +38,9 @@
 /* полка допов */
 .dv-shelf { margin: 24px 0; color: var(--dv-text); }
 .dv-shelf__title { margin-bottom: 12px; font-size: 18px; font-weight: 600; }
-.dv-shelf__tabs { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
-.dv-shelf__tabs::-webkit-scrollbar { display: none; }
-.dv-tab {
-  flex: none; padding: 7px 14px; border: 1px solid var(--dv-line); border-radius: 20px;
-  background: var(--dv-bg); color: var(--dv-text); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
-}
-.dv-tab_active { border-color: var(--dv-brand); background: var(--dv-brand); color: #fff; }
-.dv-shelf__list {
-  display: grid; grid-auto-flow: column; grid-auto-columns: 150px; gap: 12px;
-  overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory;
-}
+.dv-shelf__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .dv-card {
-  position: relative; display: flex; flex-direction: column; gap: 6px; scroll-snap-align: start;
+  position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0;
   padding: 8px; border: 1px solid var(--dv-line); border-radius: var(--dv-radius); background: var(--dv-bg);
 }
 .dv-card__img { aspect-ratio: 1; border-radius: 8px; background: var(--dv-soft) center / cover no-repeat; }
@@ -63,6 +53,18 @@
 }
 .dv-card_incart { border-color: var(--dv-brand); }
 .dv-card_incart .dv-card__badge { display: block; }
+
+/* узкие места (боковая корзина, телефон): карточки по ~100px, ужимаем отступы и текст */
+@media (max-width: 560px) {
+  .dv-shelf__list { gap: 8px; }
+  .dv-card { padding: 6px; gap: 4px; }
+  .dv-card__title { font-size: 12px; min-height: 31px; }
+  .dv-card__price { font-size: 13px; }
+  .dv-card__btn { min-height: 30px; padding: 0 6px; font-size: 12px; }
+  .dv-card__badge { top: 10px; left: 10px; padding: 2px 6px; font-size: 10px; }
+}
+.dv-cart_sidebar .dv-shelf__list { gap: 8px; }
+.dv-cart_sidebar .dv-card__btn { padding: 0 6px; }
 
 /* блок в корзине */
 .dv-cart { margin: 16px 0; padding-top: 8px; }
@@ -89,7 +91,12 @@
   font-size: 30px; line-height: 1; color: var(--dv-muted); cursor: pointer;
 }
 .dv-upsell__title { padding-right: 24px; font-size: 20px; font-weight: 600; }
-.dv-upsell__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+/* кнопки всегда видны, даже когда сетка допов прокручивается */
+.dv-upsell__actions {
+  position: sticky; bottom: -24px; z-index: 2; display: flex; flex-wrap: wrap; gap: 10px;
+  margin: 0 -24px -24px; padding: 14px 24px 24px; background: var(--dv-bg); box-shadow: 0 -8px 16px -12px rgba(0,0,0,.25);
+}
+.dv-modal_upsell .dv-shelf { margin-bottom: 16px; }
 .dv-upsell__actions .dv-btn { flex: 1 1 200px; }
 
 /* выбор параметров */
@@ -125,4 +132,5 @@
   .dv-modal__box { max-height: 92vh; border-radius: 16px 16px 0 0; padding: 24px 16px 16px; }
   .dv-picker { grid-template-columns: 1fr; }
   .dv-picker__img { max-width: 220px; width: 100%; margin: 0 auto; }
+  .dv-upsell__actions { bottom: -16px; margin: 0 -16px -16px; padding: 12px 16px 16px; }
 }

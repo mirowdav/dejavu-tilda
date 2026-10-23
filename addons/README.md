@@ -24,7 +24,7 @@
     }
   };
 </script>
-<script src="https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.3/addons/src/dv-addons.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.4/addons/src/dv-addons.js" defer></script>
 ```
 
 ### Тест на боевом сайте
@@ -40,7 +40,7 @@
     if (!localStorage.getItem('dvtest')) return;
   } catch (e) { return; }
   var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.3/addons/src/dv-addons.js';
+  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.4/addons/src/dv-addons.js';
   document.body.appendChild(s);
 })();
 </script>
@@ -52,7 +52,7 @@ CSS и `data/addons.json` скрипт подтягивает сам, относ
 
 ```jsonc
 {
-  "groups": [{ "id": "balloons", "title": "Шары" }],
+  "groups": [{ "id": "balloons", "title": "Шары" }],   // задают только порядок карточек в сетке
   "products": [{
     "id": "heart",              // → артикул в корзине DOP-heart
     "group": "balloons",

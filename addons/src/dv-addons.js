@@ -191,41 +191,34 @@
 
   /* ---------- полка допов ---------- */
 
+  // все допы одной сеткой; группы в данных задают только порядок карточек
+  function sortedProducts() {
+    var order = {};
+    (DATA.groups || []).forEach(function (g, i) { order[g.id] = i; });
+    return DATA.products.map(function (p, i) { return { p: p, i: i }; }).sort(function (a, b) {
+      var ga = order[a.p.group] != null ? order[a.p.group] : 1e9;
+      var gb = order[b.p.group] != null ? order[b.p.group] : 1e9;
+      return ga - gb || a.i - b.i;
+    }).map(function (x) { return x.p; });
+  }
+
   function renderShelf(title, mod) {
-    var groups = DATA.groups.filter(function (g) {
-      return DATA.products.some(function (p) { return p.group === g.id; });
-    });
     var root = el(
       '<div class="dv-shelf ' + (mod ? 'dv-shelf_' + mod : '') + '">' +
         (title ? '<div class="dv-shelf__title">' + esc(title) + '</div>' : '') +
-        '<div class="dv-shelf__tabs">' + groups.map(function (g, i) {
-          return '<button type="button" class="dv-tab' + (i === 0 ? ' dv-tab_active' : '') + '" data-group="' + esc(g.id) + '">' + esc(g.title) + '</button>';
+        '<div class="dv-shelf__list">' + sortedProducts().map(function (p) {
+          return '<div class="dv-card" data-id="' + esc(p.id) + '">' +
+              '<div class="dv-card__img" style="background-image:url(\'' + productImg(p, defaultSelection(p)) + '\')"></div>' +
+              '<div class="dv-card__badge">' + esc(T.inCart) + '</div>' +
+              '<div class="dv-card__title">' + esc(p.title) + '</div>' +
+              '<div class="dv-card__price">' + (hasChoice(p) ? T.from + ' ' : '') + formatPrice(minPrice(p)) + '</div>' +
+              '<button type="button" class="dv-btn dv-btn_sm dv-card__btn">' + esc(hasChoice(p) ? T.choose : T.add) + '</button>' +
+            '</div>';
         }).join('') + '</div>' +
-        '<div class="dv-shelf__list"></div>' +
       '</div>'
     );
-    var list = root.querySelector('.dv-shelf__list');
-
-    function show(groupId) {
-      list.innerHTML = DATA.products.filter(function (p) { return p.group === groupId; }).map(function (p) {
-        return '<div class="dv-card" data-id="' + esc(p.id) + '">' +
-            '<div class="dv-card__img" style="background-image:url(\'' + productImg(p, defaultSelection(p)) + '\')"></div>' +
-            '<div class="dv-card__badge">' + esc(T.inCart) + '</div>' +
-            '<div class="dv-card__title">' + esc(p.title) + '</div>' +
-            '<div class="dv-card__price">' + (hasChoice(p) ? T.from + ' ' : '') + formatPrice(minPrice(p)) + '</div>' +
-            '<button type="button" class="dv-btn dv-btn_sm dv-card__btn">' + esc(hasChoice(p) ? T.choose : T.add) + '</button>' +
-          '</div>';
-      }).join('');
-      refreshMarks();
-    }
 
     root.addEventListener('click', function (e) {
-      var tab = e.target.closest('.dv-tab');
-      if (tab) {
-        root.querySelectorAll('.dv-tab').forEach(function (t) { t.classList.toggle('dv-tab_active', t === tab); });
-        show(tab.getAttribute('data-group'));
-        return;
-      }
       var card = e.target.closest('.dv-card');
       if (!card) return;
       var product = findProduct(card.getAttribute('data-id'));
@@ -238,7 +231,6 @@
       }
     });
 
-    show(groups.length ? groups[0].id : null);
     return root;
   }
 
