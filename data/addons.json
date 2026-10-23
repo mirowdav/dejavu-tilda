@@ -1,0 +1,90 @@
+{
+  "_comment": "Демо-данные. Цены, цвета, фото и остатки — заглушки, заменить на данные клиента (позже — отдача из NocoDB/n8n).",
+  "groups": [
+    { "id": "balloons", "title": "Шары" },
+    { "id": "sweets", "title": "Клубника в шоколаде" },
+    { "id": "zielinski", "title": "Зелинский" }
+  ],
+  "products": [
+    {
+      "id": "heart",
+      "group": "balloons",
+      "title": "Шар-сердце",
+      "price": 25,
+      "options": [
+        { "title": "Размер", "values": [
+          { "name": "18 см", "price": 25 },
+          { "name": "45 см", "price": 45 }
+        ] },
+        { "title": "Цвет", "type": "color", "values": [
+          { "name": "Красный", "color": "#c8102e" },
+          { "name": "Розовый", "color": "#f4a6c0" },
+          { "name": "Белый", "color": "#ffffff" },
+          { "name": "Золото", "color": "#d4af37" }
+        ] }
+      ],
+      "stock": { "45 см / Золото": 0 }
+    },
+    {
+      "id": "balloon",
+      "group": "balloons",
+      "title": "Шар",
+      "price": 15,
+      "options": [
+        { "title": "Цвет", "type": "color", "values": [
+          { "name": "Красный", "color": "#c8102e" },
+          { "name": "Розовый", "color": "#f4a6c0" },
+          { "name": "Белый", "color": "#ffffff" },
+          { "name": "Голубой", "color": "#8ecae6" }
+        ] }
+      ]
+    },
+    {
+      "id": "digits",
+      "group": "balloons",
+      "title": "Шары-цифры",
+      "type": "digits",
+      "price": 60,
+      "maxDigits": 4,
+      "options": [
+        { "title": "Цвет", "type": "color", "values": [
+          { "name": "Золото", "color": "#d4af37" },
+          { "name": "Серебро", "color": "#c0c0c0" },
+          { "name": "Розовое золото", "color": "#e8b4a0" }
+        ] }
+      ]
+    },
+    {
+      "id": "words",
+      "group": "balloons",
+      "title": "Шары-слова",
+      "price": 120,
+      "options": [
+        { "title": "Фраза", "values": [
+          { "name": "LOVE" },
+          { "name": "Happy Birthday", "price": 180 },
+          { "name": "Мама" }
+        ] },
+        { "title": "Цвет", "type": "color", "values": [
+          { "name": "Золото", "color": "#d4af37" },
+          { "name": "Серебро", "color": "#c0c0c0" }
+        ] }
+      ]
+    },
+    { "id": "straw-9", "group": "sweets", "title": "Клубника в шоколаде, 9 шт", "price": 150 },
+    { "id": "straw-16", "group": "sweets", "title": "Клубника в шоколаде, 16 шт", "price": 240 },
+    { "id": "z-set", "group": "zielinski", "title": "Зелинский: подарочный сет", "price": 450 },
+    {
+      "id": "z-diffuser",
+      "group": "zielinski",
+      "title": "Зелинский: диффузор",
+      "price": 180,
+      "options": [
+        { "title": "Объём", "values": [
+          { "name": "85 мл", "price": 180 },
+          { "name": "200 мл", "price": 320 }
+        ] }
+      ]
+    }
+  ]
+}

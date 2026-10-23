@@ -1,0 +1,132 @@
+/* Dejavu Flowers — допы. Цвет бренда взят с сайта (#801124). */
+:root {
+  --dv-brand: #801124;
+  --dv-text: #222;
+  --dv-muted: #8a8a8a;
+  --dv-line: #e8e2da;
+  --dv-bg: #fff;
+  --dv-soft: #f7f3ee;
+  --dv-radius: 12px;
+  --dv-font: 'Manrope', Arial, sans-serif;
+}
+
+.dv-shelf, .dv-modal, .dv-hint, .dv-variant-hint, .dv-cart,
+.dv-btn, .dv-tab, .dv-chip, .dv-digits { font-family: var(--dv-font); }
+
+.dv-noscroll, .dv-noscroll body { overflow: hidden !important; }
+.dv-modal *, .dv-shelf *, .dv-cart * { box-sizing: border-box; }
+.dv-picker__body { min-width: 0; }
+
+.dv-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 20px; border: 1px solid var(--dv-brand); border-radius: 30px;
+  background: var(--dv-brand); color: #fff; font: inherit; font-size: 15px; cursor: pointer;
+  transition: opacity .2s;
+}
+.dv-btn:disabled { opacity: .45; cursor: default; }
+.dv-btn_sm { min-height: 34px; padding: 0 14px; font-size: 13px; }
+.dv-btn_ghost { background: transparent; color: var(--dv-brand); }
+
+/* плашка и подсказка на карточке товара */
+.dv-hint {
+  display: block; margin: 14px 0; padding: 12px 16px; border-radius: var(--dv-radius);
+  background: var(--dv-soft); color: var(--dv-brand) !important; font-size: 14px; text-decoration: none !important;
+}
+.dv-variant-hint { margin: 8px 0 4px; font-size: 14px; color: var(--dv-muted); }
+.dv-variant-hint:empty { display: none; }
+
+/* полка допов */
+.dv-shelf { margin: 24px 0; color: var(--dv-text); }
+.dv-shelf__title { margin-bottom: 12px; font-size: 18px; font-weight: 600; }
+.dv-shelf__tabs { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
+.dv-shelf__tabs::-webkit-scrollbar { display: none; }
+.dv-tab {
+  flex: none; padding: 7px 14px; border: 1px solid var(--dv-line); border-radius: 20px;
+  background: var(--dv-bg); color: var(--dv-text); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.dv-tab_active { border-color: var(--dv-brand); background: var(--dv-brand); color: #fff; }
+.dv-shelf__list {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 150px; gap: 12px;
+  overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory;
+}
+.dv-card {
+  position: relative; display: flex; flex-direction: column; gap: 6px; scroll-snap-align: start;
+  padding: 8px; border: 1px solid var(--dv-line); border-radius: var(--dv-radius); background: var(--dv-bg);
+}
+.dv-card__img { aspect-ratio: 1; border-radius: 8px; background: var(--dv-soft) center / cover no-repeat; }
+.dv-card__title { font-size: 13px; line-height: 1.3; min-height: 34px; }
+.dv-card__price { font-size: 14px; font-weight: 600; }
+.dv-card__btn { margin-top: auto; }
+.dv-card__badge {
+  display: none; position: absolute; top: 14px; left: 14px; padding: 3px 8px; border-radius: 10px;
+  background: var(--dv-brand); color: #fff; font-size: 11px;
+}
+.dv-card_incart { border-color: var(--dv-brand); }
+.dv-card_incart .dv-card__badge { display: block; }
+
+/* блок в корзине */
+.dv-cart { margin: 16px 0; padding-top: 8px; border-top: 1px solid var(--dv-line); }
+.dv-cart .dv-shelf { margin: 8px 0 16px; }
+.dv-cart__next { width: 100%; }
+.t706__cartpage:not(.dv-step1) .dv-cart__next { display: none; }
+@media (min-width: 961px) {
+  .t706__cartpage.dv-step1 .t706__cartpage-form { display: none !important; }
+  .t706__cartpage.dv-step1 .t706__cartpage-info { margin: 0 auto; float: none; }
+}
+@media (max-width: 960px) {
+  /* на мобильном Tilda сама делит оформление на 2 шага */
+  .dv-cart__next { display: none !important; }
+}
+
+/* модалки */
+.dv-modal {
+  position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(0, 0, 0, .45);
+}
+.dv-modal__box {
+  position: relative; width: 100%; max-width: 720px; max-height: calc(100vh - 32px); overflow-y: auto;
+  padding: 28px 24px 24px; border-radius: 16px; background: var(--dv-bg); color: var(--dv-text);
+}
+.dv-modal_picker .dv-modal__box { max-width: 560px; }
+.dv-modal__close {
+  position: absolute; top: 8px; right: 12px; border: 0; background: none;
+  font-size: 30px; line-height: 1; color: var(--dv-muted); cursor: pointer;
+}
+.dv-upsell__title { padding-right: 24px; font-size: 20px; font-weight: 600; }
+.dv-upsell__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.dv-upsell__actions .dv-btn { flex: 1 1 200px; }
+
+/* выбор параметров */
+.dv-picker { display: grid; grid-template-columns: 200px 1fr; gap: 20px; }
+.dv-picker__img { aspect-ratio: 1; border-radius: var(--dv-radius); background: var(--dv-soft) center / cover no-repeat; }
+.dv-picker__title { padding-right: 24px; margin-bottom: 12px; font-size: 18px; font-weight: 600; }
+.dv-opt { margin-bottom: 14px; }
+.dv-opt__title { margin-bottom: 8px; font-size: 13px; color: var(--dv-muted); }
+.dv-opt__title b { color: var(--dv-text); font-weight: 500; }
+.dv-opt__values { display: flex; flex-wrap: wrap; gap: 8px; }
+.dv-chip {
+  min-height: 34px; padding: 0 12px; border: 1px solid var(--dv-line); border-radius: 18px;
+  background: var(--dv-bg); color: var(--dv-text); font: inherit; font-size: 13px; cursor: pointer;
+}
+.dv-chip_active { border-color: var(--dv-brand); box-shadow: inset 0 0 0 1px var(--dv-brand); }
+.dv-chip_color { width: 34px; padding: 0; border-radius: 50%; background: var(--dv-swatch); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+.dv-chip_color.dv-chip_active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--dv-brand); }
+.dv-chip_off { opacity: .35; text-decoration: line-through; }
+.dv-digits {
+  width: 100%; height: 44px; padding: 0 14px; border: 1px solid var(--dv-line); border-radius: 10px;
+  font: inherit; font-size: 18px; letter-spacing: 4px; box-sizing: border-box;
+}
+.dv-picker__row { display: flex; align-items: center; justify-content: space-between; margin: 16px 0 8px; }
+.dv-qty { display: inline-flex; align-items: center; border: 1px solid var(--dv-line); border-radius: 22px; }
+.dv-qty button { width: 38px; height: 38px; border: 0; background: none; font-size: 18px; cursor: pointer; color: var(--dv-text); }
+.dv-qty__val { min-width: 24px; text-align: center; }
+.dv-picker__price { font-size: 18px; font-weight: 600; }
+.dv-picker__stock { min-height: 18px; margin-bottom: 8px; font-size: 13px; color: var(--dv-brand); }
+.dv-picker__add { width: 100%; }
+
+@media (max-width: 560px) {
+  .dv-modal { align-items: flex-end; padding: 0; }
+  .dv-modal__box { max-height: 92vh; border-radius: 16px 16px 0 0; padding: 24px 16px 16px; }
+  .dv-picker { grid-template-columns: 1fr; }
+  .dv-picker__img { max-width: 220px; width: 100%; margin: 0 auto; }
+}
