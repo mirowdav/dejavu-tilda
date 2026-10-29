@@ -13,7 +13,7 @@
     var l = document.createElement('link');
     l.id = 'dv-product-ui-css';
     l.rel = 'stylesheet';
-    l.href = self.src.replace(/\.js(\?.*)?$/, '.css');
+    l.href = self.src.replace(/\.js(\?|$)/, '.css$1'); // метку ?t= из загрузчика тоже передаём
     document.head.appendChild(l);
   }
   var IMG = self && self.src ? self.src.replace(/dv-product-ui\.js(\?.*)?$/, 'img/') : '';

@@ -29,7 +29,8 @@ window.DV_SIZE_GUIDE = false; // или { title, text, img: 'https://...' }
     if (!localStorage.getItem('dvui')) return;
   } catch (e) { return; }
   var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@main/product-ui/dv-product-ui.js';
+  // метка раз в 10 минут: браузер иначе держит файл с @main до 7 дней
+  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@main/product-ui/dv-product-ui.js?t=' + Math.floor(Date.now() / 6e5);
   (document.body || document.head).appendChild(s);
 })();
 </script>
