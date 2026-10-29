@@ -1,4 +1,4 @@
-/* Dejavu: доп. разметка для карточки товара (крошки, размеры, преимущества, таблица цен). */
+/* Dejavu: доп. разметка для карточки товара (крошки, размеры, преимущества, плашка с размерами). */
 (function () {
   var PERKS = [
     ['Доставка в день заказа', '<path d="M3 7h11v8H3zM14 10h4l3 3v2h-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="7" cy="17" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="17" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/>'],
@@ -18,22 +18,11 @@
   }
   var IMG = self && self.src ? self.src.replace(/dv-product-ui\.js(\?.*)?$/, 'img/') : '';
 
-  // Фото для сравнения размеров. Переопределить: window.DV_SIZE_GUIDE = {...}, отключить: false
+  // Плашка «Как выглядят размеры» с фото на весь экран. Переопределить: window.DV_SIZE_GUIDE = {...}, отключить: false
   var GUIDE = window.DV_SIZE_GUIDE !== undefined ? window.DV_SIZE_GUIDE : {
     title: 'Как выглядят размеры',
-    groups: [
-      { name: 'Букет', match: /букет/i, items: [
-        { img: 'bouquet-11.jpg', label: '11 шт.', count: 11, w: 285, h: 478 },
-        { img: 'bouquet-25.jpg', label: '25 шт.', count: 25, w: 268, h: 478 },
-        { img: 'bouquet-51.jpg', label: '51 шт.', count: 51, w: 338, h: 478 }
-      ] },
-      { name: 'Коробка', match: /короб/i, items: [
-        { img: 'box-25.jpg', label: 'S · 25 шт.', count: 25, w: 184, h: 443 },
-        { img: 'box-51.jpg', label: 'M · 51 шт.', count: 51, w: 186, h: 443 },
-        { img: 'box-101.jpg', label: 'L · 101 шт.', count: 101, w: 224, h: 443 },
-        { img: 'box-201.jpg', label: 'XL · 201 шт.', count: 201, w: 298, h: 443 }
-      ] }
-    ]
+    text: 'Букеты и коробки в сравнении — нажмите, чтобы увеличить',
+    img: IMG + 'sizes.jpg'
   };
 
   function init(root) {
@@ -78,7 +67,6 @@
       var sync = function () {
         var a = opt.querySelector('.t-product__option-item_active input');
         val.textContent = isSize || !a ? '' : a.value;
-        syncGuide(root);
       };
       opt.addEventListener('change', function () { setTimeout(sync, 0); });
       opt.addEventListener('click', function () { setTimeout(sync, 0); });
@@ -99,58 +87,33 @@
     buildGuide(root);
   }
 
-  // Блок «Как выглядят размеры»: ряды фото одной высоты, чтобы масштаб был честным
   function buildGuide(root) {
-    var sizeOpt = root.querySelector('.dv-size');
     var anchor = root.querySelector('.dv-perks') || root.querySelector('.t-catalog__prod-popup__btn-wrapper');
-    if (!GUIDE || !sizeOpt || !anchor) return;
-    var g = document.createElement('div');
+    if (!GUIDE || !anchor || !root.querySelector('.dv-size')) return;
+    var g = document.createElement('button');
+    g.type = 'button';
     g.className = 'dv-guide';
-    g.innerHTML = '<div class="dv-guide__head"><div class="dv-guide__title">' + GUIDE.title + '</div>' +
-      '<div class="dv-guide__tabs">' + GUIDE.groups.map(function (gr, i) {
-        return '<button type="button" data-tab="' + i + '"' + (i ? '' : ' class="is-active"') + '>' + gr.name + '</button>';
-      }).join('') + '</div></div>' +
-      GUIDE.groups.map(function (gr, i) {
-        return '<div class="dv-guide__row" data-row="' + i + '"' + (i ? ' hidden' : '') + '>' + gr.items.map(function (it) {
-          return '<figure class="dv-guide__item" data-count="' + it.count + '" style="flex-grow:' + (it.w / it.h).toFixed(3) + '">' +
-            '<img src="' + IMG + it.img + '" alt="' + gr.name + ' ' + it.label + '" loading="lazy" width="' + it.w + '" height="' + it.h + '">' +
-            '<figcaption>' + it.label + '</figcaption></figure>';
-        }).join('') + '</div>';
-      }).join('');
+    g.innerHTML = '<img src="' + GUIDE.img + '" alt="" loading="lazy">' +
+      '<span class="dv-guide__txt"><b>' + GUIDE.title + '</b>' + GUIDE.text + '</span>' +
+      '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M15 15l5 5M10.5 8v5M8 10.5h5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    g.addEventListener('click', openZoom);
     anchor.insertAdjacentElement('afterend', g);
-
-    g.addEventListener('click', function (e) {
-      var tab = e.target.closest('[data-tab]');
-      if (tab) { g.dataset.manual = '1'; showTab(g, +tab.dataset.tab); return; }
-      // клик по фото выбирает такой же размер в опциях
-      var it = e.target.closest('.dv-guide__item');
-      if (!it) return;
-      var lbl = [].filter.call(sizeOpt.querySelectorAll('label'), function (l) {
-        return countOf(l.querySelector('input').value) === +it.dataset.count;
-      })[0];
-      if (lbl) lbl.click();
-    });
-    syncGuide(root);
   }
 
-  function showTab(g, i) {
-    g.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.toggle('is-active', +b.dataset.tab === i); });
-    g.querySelectorAll('[data-row]').forEach(function (r) { r.hidden = +r.dataset.row !== i; });
-  }
-
-  function countOf(v) { return +((String(v).match(/(\d+)\s*шт/) || [])[1] || 0); }
-
-  // Вкладка — по «Оформлению» (пока юзер не переключил сам), подсветка — по числу цветов в размере
-  function syncGuide(root) {
-    var g = root.querySelector('.dv-guide');
-    if (!g) return;
-    var form = root.querySelector('.dv-optimg-on .t-product__option-item_active input, [data-edition-option-id="Оформление"] .t-product__option-item_active input');
-    if (form && !g.dataset.manual) {
-      GUIDE.groups.forEach(function (gr, i) { if (gr.match.test(form.value)) showTab(g, i); });
-    }
-    var size = root.querySelector('.dv-size .t-product__option-item_active input');
-    var n = size ? countOf(size.value) : 0;
-    g.querySelectorAll('.dv-guide__item').forEach(function (it) { it.classList.toggle('is-active', +it.dataset.count === n); });
+  function openZoom() {
+    var z = document.createElement('div');
+    z.className = 'dv-zoom';
+    z.innerHTML = '<img src="' + GUIDE.img + '" alt="' + GUIDE.title + '"><button type="button" aria-label="Закрыть">&times;</button>';
+    var close = function () {
+      z.remove();
+      document.documentElement.style.overflow = '';
+      document.removeEventListener('keydown', onKey);
+    };
+    var onKey = function (e) { if (e.key === 'Escape') close(); };
+    z.addEventListener('click', close);
+    document.addEventListener('keydown', onKey);
+    document.documentElement.style.overflow = 'hidden';
+    document.body.appendChild(z);
   }
 
   function run() { document.querySelectorAll('.t-catalog__prod-snippet__container').forEach(init); }

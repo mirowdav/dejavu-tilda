@@ -82,21 +82,16 @@
 /* Описание не показываем: из него только берутся цены по размерам */
 .t-catalog__prod-snippet__container .t-catalog__prod-popup__text{display:none!important}
 
-/* Как выглядят размеры */
-.dv-guide{margin-top:28px;padding-top:24px;border-top:1px solid var(--dv-line)}
-.dv-guide__head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 12px;margin-bottom:14px}
-.dv-guide__title{font:600 12px/1.3 Manrope,Arial,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--dv-muted)}
-.dv-guide__tabs{display:flex;padding:3px;border-radius:999px;background:var(--dv-soft)}
-.dv-guide__tabs button{border:0;background:none;padding:6px 14px;border-radius:999px;font:500 13px/1 Manrope,Arial,sans-serif;color:var(--dv-muted);cursor:pointer}
-.dv-guide__tabs button.is-active{background:#fff;color:var(--dv-ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.dv-guide__row{display:flex;gap:8px;align-items:flex-end}
-.dv-guide__row[hidden]{display:none}
-.dv-guide__item{flex-basis:0;min-width:0;margin:0;cursor:pointer}
-.dv-guide__item img{display:block;width:100%;height:auto;border:1px solid var(--dv-line);box-sizing:border-box;transition:border-color .15s}
-.dv-guide__item figcaption{margin-top:8px;text-align:center;font:500 12.5px/1.3 Manrope,Arial,sans-serif;color:var(--dv-muted)}
-.dv-guide__item:hover img{border-color:#bdb6ae}
-.dv-guide__item.is-active img{border-color:var(--dv-ink)}
-.dv-guide__item.is-active figcaption{color:var(--dv-ink);font-weight:600}
+/* Плашка «Как выглядят размеры» и фото на весь экран */
+.dv-guide{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;margin-top:16px;padding:10px 16px 10px 10px;border:1px solid var(--dv-line);border-radius:12px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:var(--dv-ink);transition:border-color .15s}
+.dv-guide:hover{border-color:var(--dv-ink)}
+.dv-guide img{flex:none;width:56px;height:72px;object-fit:cover;object-position:center 20%;border:1px solid var(--dv-line);box-sizing:border-box}
+.dv-guide__txt{flex:1;display:flex;flex-direction:column;gap:3px;font:400 13px/1.35 Manrope,Arial,sans-serif;color:var(--dv-muted)}
+.dv-guide__txt b{font-size:15px;font-weight:600;color:var(--dv-ink)}
+.dv-guide svg{flex:none;width:22px;height:22px}
+.dv-zoom{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,17,.88);cursor:zoom-out}
+.dv-zoom img{max-width:100%;max-height:100%;object-fit:contain;border:1px solid var(--dv-line);background:#fff}
+.dv-zoom button{position:absolute;top:12px;right:16px;width:44px;height:44px;border:0;background:none;color:#fff;font-size:34px;line-height:1;cursor:pointer}
 
 /* Мобильная версия */
 @media (max-width:960px){
