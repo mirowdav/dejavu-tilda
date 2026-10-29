@@ -29,13 +29,12 @@ window.DV_SIZE_GUIDE = false; // или { title, text, img: 'https://...' }
     if (!localStorage.getItem('dvui')) return;
   } catch (e) { return; }
   var s = document.createElement('script');
-  // метка раз в 10 минут: браузер иначе держит файл с @main до 7 дней
-  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@main/product-ui/dv-product-ui.js?t=' + Math.floor(Date.now() / 6e5);
+  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.7/product-ui/dv-product-ui.js';
   (document.body || document.head).appendChild(s);
 })();
 </script>
 ```
 
-Подключено по ветке `@main`, чтобы не менять ссылку в Tilda при каждом обновлении. jsDelivr кэширует ветку до 12 часов, поэтому после пуша сбрасываем кэш (см. «Релиз» в корневом README).
+Подключено по тегу. `@main` пробовали: сброс кэша jsDelivr расходится по серверам минутами, а браузер держит файл ветки до 7 дней.
 
 Локальная проверка: `before.html` / `after.html` (копии страницы, в git не входят).
