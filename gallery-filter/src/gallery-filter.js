@@ -23,8 +23,12 @@ const SELECTORS = {
 };
 
 // Заглушка, когда под выбранную комбинацию опций нет ни одного фото.
-// Пустая строка = заглушка отключена (галерея в этом случае не меняется).
-const PLACEHOLDER_IMAGE = 'https://static.tildacdn.com/tild3530-3439-4039-b839-336533643132/Group_2087325963.svg';
+// На другом сайте задаётся до подключения скрипта:
+//   <script>window.GALLERY_FILTER_CONFIG = { placeholder: 'https://...' };</script>
+// Пустая строка '' = заглушка отключена (галерея в этом случае не меняется).
+const DEFAULT_PLACEHOLDER = 'https://static.tildacdn.com/tild3530-3439-4039-b839-336533643132/Group_2087325963.svg';
+const USER_CONFIG = window.GALLERY_FILTER_CONFIG || {};
+const PLACEHOLDER_IMAGE = typeof USER_CONFIG.placeholder === 'string' ? USER_CONFIG.placeholder : DEFAULT_PLACEHOLDER;
 
 let captionImages = [];
 let currentRecid = null;

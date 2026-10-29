@@ -20,6 +20,17 @@
 
 Ссылка постоянная (`@main`): правки в скрипте попадают на сайт без смены ссылки.
 
+### Своя заглушка на другом сайте
+
+По умолчанию стоит заглушка dejavuflowers.ae. На другом сайте задать свою можно перед подключением скрипта (загрузить картинку в Tilda и взять её URL):
+
+```html
+<script>window.GALLERY_FILTER_CONFIG = { placeholder: 'https://static.tildacdn.com/.../placeholder.png' };</script>
+<script src="https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@main/gallery-filter/src/gallery-filter.js" defer></script>
+```
+
+`placeholder: ''` отключает заглушку: если под комбинацию нет фото, галерея остаётся как была.
+
 ## Обновление
 
 1. Правка в `gallery-filter/src/gallery-filter.js`, коммит и пуш в `main`.
