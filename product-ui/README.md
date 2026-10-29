@@ -20,7 +20,7 @@ CSS подтягивается скриптом сам, из той же пап�
   } catch (e) { return; }
   var s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.5/product-ui/dv-product-ui.js';
-  document.body.appendChild(s);
+  (document.body || document.head).appendChild(s);
 })();
 </script>
 ```
