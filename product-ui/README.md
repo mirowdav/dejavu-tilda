@@ -6,6 +6,10 @@ CSS подтягивается скриптом сам, из той же пап�
 
 Цены в кнопках размера берутся из описания товара, строки вида `S 25 шт. — 450 AED`. Тексты преимуществ и ссылка на каталог — в начале `dv-product-ui.js` (`PERKS`, `CATALOG`).
 
+## Допы в карточке
+
+Скрипт сам подгружает модуль [addons](../addons/) из того же тега: полка «Дополните подарок» в карточке, попап после «В корзину», блок в корзине. Внутри карточки полка перекрашена в стиль карточки (4 в ряд, на мобиле лента со свайпом), ссылка «Добавьте шары…» скрыта. Если addons подключён отдельно, второй раз не грузится; отключить: `window.DV_ADDONS_SKIP = true`.
+
 ## Как выглядят размеры
 
 Плашка под кнопкой покупки: превью `img/sizes.jpg`, по клику фото открывается на весь экран (закрыть — клик или Esc). Показывается только у товаров с опцией «Размер».
@@ -29,7 +33,7 @@ window.DV_SIZE_GUIDE = false; // или { title, text, img: 'https://...' }
     if (!localStorage.getItem('dvui')) return;
   } catch (e) { return; }
   var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.7/product-ui/dv-product-ui.js';
+  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.8/product-ui/dv-product-ui.js';
   (document.body || document.head).appendChild(s);
 })();
 </script>

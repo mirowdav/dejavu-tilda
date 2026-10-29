@@ -18,6 +18,13 @@
   }
   var IMG = self && self.src ? self.src.replace(/dv-product-ui\.js(\?.*)?$/, 'img/') : '';
 
+  // Допы (модуль addons) из того же тега: полка в карточке, попап, блок в корзине. Отключить: window.DV_ADDONS_SKIP = true
+  if (self && self.src && !window.DV_ADDONS_SKIP && !window.__dvAddonsLoaded && !document.querySelector('script[src*="dv-addons.js"]')) {
+    var a = document.createElement('script');
+    a.src = self.src.replace(/product-ui\/dv-product-ui\.js(\?.*)?$/, 'addons/src/dv-addons.js');
+    (document.body || document.head).appendChild(a);
+  }
+
   // Плашка «Как выглядят размеры» с фото на весь экран. Переопределить: window.DV_SIZE_GUIDE = {...}, отключить: false
   var GUIDE = window.DV_SIZE_GUIDE !== undefined ? window.DV_SIZE_GUIDE : {
     title: 'Как выглядят размеры',

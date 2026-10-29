@@ -93,8 +93,26 @@
 .dv-zoom img{max-width:100%;max-height:100%;object-fit:contain;border:1px solid var(--dv-line);background:#fff}
 .dv-zoom button{position:absolute;top:12px;right:16px;width:44px;height:44px;border:0;background:none;color:#fff;font-size:34px;line-height:1;cursor:pointer}
 
+/* Допы (модуль addons) в карточке: компактная сетка в стиле карточки. Ссылка «Добавьте шары…» не нужна — полка рядом */
+.t-catalog__prod-snippet__container .dv-hint{display:none!important}
+.t-catalog__prod-snippet__container .dv-shelf_product{margin:28px 0 0;padding-top:24px;border-top:1px solid var(--dv-line)}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-shelf__title{margin-bottom:14px;font:600 12px/1.3 Manrope,Arial,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--dv-muted)}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-shelf__list{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-card{padding:0;gap:4px;border:0;border-radius:0;background:none}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-card__img{border-radius:0;border:1px solid var(--dv-line);margin-bottom:4px}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-card__title{font-size:13px;min-height:34px;color:var(--dv-ink)}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-card__price{font-size:13px;font-weight:600;color:var(--dv-ink)}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-card__btn{margin-top:6px;min-height:34px;border:1px solid var(--dv-ink);border-radius:8px;background:#fff;color:var(--dv-ink);font-size:13px;font-weight:500;transition:background .15s,color .15s}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-card__btn:hover{background:var(--dv-ink);color:#fff}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-card_incart .dv-card__img{border-color:var(--dv-ink)}
+.t-catalog__prod-snippet__container .dv-shelf_product .dv-card__badge{top:8px;left:8px;border-radius:0;background:var(--dv-ink)}
+
 /* Мобильная версия */
 @media (max-width:960px){
+  /* допы — лентой со свайпом, следующая карточка выглядывает */
+  .t-catalog__prod-snippet__container .dv-shelf_product .dv-shelf__list{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:0 20px;scroll-padding:0 20px;scrollbar-width:none}
+  .t-catalog__prod-snippet__container .dv-shelf_product .dv-shelf__list::-webkit-scrollbar{display:none}
+  .t-catalog__prod-snippet__container .dv-shelf_product .dv-card{flex:0 0 38%;scroll-snap-align:start}
   .t-catalog__prod-snippet__container{padding-top:64px!important}
   .t-catalog__prod-snippet__container .t-container > div{display:block}
   .t-catalog__prod-popup__col-left{position:static}
