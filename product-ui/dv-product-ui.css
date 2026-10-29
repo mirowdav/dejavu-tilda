@@ -13,13 +13,13 @@
 .t-catalog__prod-popup__col-left{position:sticky;top:96px}
 .t-catalog__prod-popup__col-right{padding-left:32px;box-sizing:border-box}
 
-/* Галерея: скругления, мягкий фон, превью рядом */
-.t-catalog__prod-popup__slider .t-slds__container{border-radius:var(--dv-radius);overflow:hidden;background:var(--dv-soft)!important}
+/* Галерея: прямые углы, обводка 1px, мягкий фон, превью рядом */
+.t-catalog__prod-popup__slider .t-slds__container{border:1px solid var(--dv-line);overflow:hidden;background:var(--dv-soft)!important}
 .t-catalog__prod-popup__slider .t-slds__thumbsbullet-wrapper{display:flex;gap:10px;margin-top:12px}
-.t-catalog__prod-popup__slider .t-slds__thumbsbullet{width:72px!important;height:72px!important;margin:0!important;border-radius:10px;overflow:hidden;opacity:.55;transition:opacity .2s}
+.t-catalog__prod-popup__slider .t-slds__thumbsbullet{width:72px!important;height:72px!important;margin:0!important;border:1px solid var(--dv-line);box-sizing:border-box;overflow:hidden;opacity:.55;transition:opacity .2s}
 .t-catalog__prod-popup__slider .t-slds__thumbsbullet_active,
 .t-catalog__prod-popup__slider .t-slds__thumbsbullet:hover{opacity:1}
-.t-catalog__prod-popup__slider .t-slds__thumbsbullet-border{border-radius:10px;border-width:1.5px!important;border-color:var(--dv-ink)!important}
+.t-catalog__prod-popup__slider .t-slds__thumbsbullet-border{border-radius:0;border-width:1px!important;border-color:var(--dv-ink)!important}
 .t-catalog__prod-popup__slider .t-slds__arrow{border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 
 /* Заголовок и цена */
@@ -51,7 +51,7 @@
 /* Оформление: 3 карточки с фото */
 .dv-optimg-on .t-product__option-variants_buttons{grid-template-columns:repeat(3,1fr)}
 .dv-optimg-on .t-product__option-item_buttons{padding:10px 10px 12px!important;gap:8px!important;display:flex!important;flex-direction:column;align-items:center;width:auto!important}
-.dv-optimg-on .dv-optimg{width:100%!important;height:auto!important;aspect-ratio:1;border-radius:8px;background:var(--dv-soft);object-fit:contain!important}
+.dv-optimg-on .dv-optimg{width:100%!important;height:auto!important;aspect-ratio:1;border-radius:0!important;border:1px solid var(--dv-line);box-sizing:border-box;background:var(--dv-soft);object-fit:contain!important}
 .dv-optimg-on .t-product__option-title_buttons{font-size:14px!important;font-weight:500}
 .dv-optimg-on .t-product__option-item_active::after{
   content:"";position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;
@@ -79,14 +79,24 @@
 .dv-perk{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:var(--dv-soft);font:500 12.5px/1.3 Manrope,Arial,sans-serif;color:var(--dv-ink)}
 .dv-perk svg{flex:none;width:18px;height:18px}
 
-/* Описание: аккуратный блок, прайс по размерам — таблицей */
-.t-catalog__prod-popup__text{margin-top:28px!important;padding-top:24px;border-top:1px solid var(--dv-line)}
-.t-catalog__prod-popup__text [data-customstyle]{font-size:15px!important;line-height:1.6;color:#3b3835}
-.dv-sizes{margin-top:16px;border:1px solid var(--dv-line);border-radius:12px;overflow:hidden}
-.dv-sizes div{display:flex;justify-content:space-between;padding:12px 16px;font:500 14px/1.3 Manrope,Arial,sans-serif}
-.dv-sizes div + div{border-top:1px solid var(--dv-line)}
-.dv-sizes div.is-active{background:var(--dv-soft)}
-.dv-sizes span{color:var(--dv-muted)}
+/* Описание не показываем: из него только берутся цены по размерам */
+.t-catalog__prod-snippet__container .t-catalog__prod-popup__text{display:none!important}
+
+/* Как выглядят размеры */
+.dv-guide{margin-top:28px;padding-top:24px;border-top:1px solid var(--dv-line)}
+.dv-guide__head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 12px;margin-bottom:14px}
+.dv-guide__title{font:600 12px/1.3 Manrope,Arial,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--dv-muted)}
+.dv-guide__tabs{display:flex;padding:3px;border-radius:999px;background:var(--dv-soft)}
+.dv-guide__tabs button{border:0;background:none;padding:6px 14px;border-radius:999px;font:500 13px/1 Manrope,Arial,sans-serif;color:var(--dv-muted);cursor:pointer}
+.dv-guide__tabs button.is-active{background:#fff;color:var(--dv-ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.dv-guide__row{display:flex;gap:8px;align-items:flex-end}
+.dv-guide__row[hidden]{display:none}
+.dv-guide__item{flex-basis:0;min-width:0;margin:0;cursor:pointer}
+.dv-guide__item img{display:block;width:100%;height:auto;border:1px solid var(--dv-line);box-sizing:border-box;transition:border-color .15s}
+.dv-guide__item figcaption{margin-top:8px;text-align:center;font:500 12.5px/1.3 Manrope,Arial,sans-serif;color:var(--dv-muted)}
+.dv-guide__item:hover img{border-color:#bdb6ae}
+.dv-guide__item.is-active img{border-color:var(--dv-ink)}
+.dv-guide__item.is-active figcaption{color:var(--dv-ink);font-weight:600}
 
 /* Мобильная версия */
 @media (max-width:960px){

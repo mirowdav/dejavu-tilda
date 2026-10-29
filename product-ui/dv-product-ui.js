@@ -16,6 +16,25 @@
     l.href = self.src.replace(/\.js(\?.*)?$/, '.css');
     document.head.appendChild(l);
   }
+  var IMG = self && self.src ? self.src.replace(/dv-product-ui\.js(\?.*)?$/, 'img/') : '';
+
+  // Фото для сравнения размеров. Переопределить: window.DV_SIZE_GUIDE = {...}, отключить: false
+  var GUIDE = window.DV_SIZE_GUIDE !== undefined ? window.DV_SIZE_GUIDE : {
+    title: 'Как выглядят размеры',
+    groups: [
+      { name: 'Букет', match: /букет/i, items: [
+        { img: 'bouquet-11.jpg', label: '11 шт.', count: 11, w: 285, h: 478 },
+        { img: 'bouquet-25.jpg', label: '25 шт.', count: 25, w: 268, h: 478 },
+        { img: 'bouquet-51.jpg', label: '51 шт.', count: 51, w: 338, h: 478 }
+      ] },
+      { name: 'Коробка', match: /короб/i, items: [
+        { img: 'box-25.jpg', label: 'S · 25 шт.', count: 25, w: 184, h: 443 },
+        { img: 'box-51.jpg', label: 'M · 51 шт.', count: 51, w: 186, h: 443 },
+        { img: 'box-101.jpg', label: 'L · 101 шт.', count: 101, w: 224, h: 443 },
+        { img: 'box-201.jpg', label: 'XL · 201 шт.', count: 201, w: 298, h: 443 }
+      ] }
+    ]
+  };
 
   function init(root) {
     if (root.dataset.dvUi || !root.querySelector('.js-product-edition-option')) return;
@@ -32,27 +51,14 @@
       name.textContent = name.textContent.replace(/\s*\(\s*\)\s*$/, '');
     }
 
-    // Цены по размерам из описания: «S 25 шт. — 450 AED»
-    var text = root.querySelector('.js-catalog-prod-all-text [data-customstyle], .js-catalog-prod-all-text');
+    // Цены по размерам из описания: «S 25 шт. — 450 AED» (само описание скрыто в CSS)
+    var text = root.querySelector('.js-catalog-prod-all-text');
     var prices = {};
     if (text) {
-      var html = text.innerHTML;
-      var rows = html.split(/<br\s*\/?>/i).map(function (l) { return l.replace(/<[^>]+>|&nbsp;/g, ' ').trim(); });
-      var hits = rows.filter(function (l) { return /^([SMLX]{1,3})\s+(\d+)\s*шт\.?\s*[—-]\s*([\d\s]+)\s*AED/i.test(l); });
-      if (hits.length) {
-        var table = '<div class="dv-sizes">';
-        hits.forEach(function (l) {
-          var m = l.match(/^([SMLX]{1,3})\s+(\d+)\s*шт\.?\s*[—-]\s*([\d\s]+)\s*AED/i);
-          prices[m[1].toUpperCase()] = m[3].trim();
-          table += '<div data-size="' + m[1].toUpperCase() + '"><span>' + m[1].toUpperCase() + ' · ' + m[2] + ' цветков</span>' + m[3].trim() + ' AED</div>';
-        });
-        table += '</div>';
-        // убираем строки прайса из текста (и лишние переносы перед ними)
-        var keep = html.split(/<br\s*\/?>/i).filter(function (l, i) { return hits.indexOf(rows[i]) < 0; });
-        while (keep.length && !keep[keep.length - 1].replace(/&nbsp;|\s/g, '')) keep.pop();
-        text.innerHTML = keep.join('<br>');
-        text.insertAdjacentHTML('afterend', table);
-      }
+      text.innerHTML.split(/<br\s*\/?>/i).forEach(function (l) {
+        var m = l.replace(/<[^>]+>|&nbsp;/g, ' ').trim().match(/^([SMLX]{1,3})\s+\d+\s*шт\.?\s*[—-]\s*([\d\s]+)\s*AED/i);
+        if (m) prices[m[1].toUpperCase()] = m[2].trim();
+      });
     }
 
     // Опции: значение рядом с заголовком, размер — в 3 строки
@@ -71,12 +77,8 @@
       title.appendChild(val);
       var sync = function () {
         var a = opt.querySelector('.t-product__option-item_active input');
-        var v = a ? a.value : '';
-        val.textContent = isSize ? '' : v;
-        if (isSize) {
-          var k = (v.match(/^\s*([A-Z]{1,3})/) || [])[1];
-          root.querySelectorAll('.dv-sizes [data-size]').forEach(function (r) { r.classList.toggle('is-active', r.dataset.size === k); });
-        }
+        val.textContent = isSize || !a ? '' : a.value;
+        syncGuide(root);
       };
       opt.addEventListener('change', function () { setTimeout(sync, 0); });
       opt.addEventListener('click', function () { setTimeout(sync, 0); });
@@ -93,6 +95,62 @@
       }).join('');
       btns.insertAdjacentElement('afterend', p);
     }
+
+    buildGuide(root);
+  }
+
+  // Блок «Как выглядят размеры»: ряды фото одной высоты, чтобы масштаб был честным
+  function buildGuide(root) {
+    var sizeOpt = root.querySelector('.dv-size');
+    var anchor = root.querySelector('.dv-perks') || root.querySelector('.t-catalog__prod-popup__btn-wrapper');
+    if (!GUIDE || !sizeOpt || !anchor) return;
+    var g = document.createElement('div');
+    g.className = 'dv-guide';
+    g.innerHTML = '<div class="dv-guide__head"><div class="dv-guide__title">' + GUIDE.title + '</div>' +
+      '<div class="dv-guide__tabs">' + GUIDE.groups.map(function (gr, i) {
+        return '<button type="button" data-tab="' + i + '"' + (i ? '' : ' class="is-active"') + '>' + gr.name + '</button>';
+      }).join('') + '</div></div>' +
+      GUIDE.groups.map(function (gr, i) {
+        return '<div class="dv-guide__row" data-row="' + i + '"' + (i ? ' hidden' : '') + '>' + gr.items.map(function (it) {
+          return '<figure class="dv-guide__item" data-count="' + it.count + '" style="flex-grow:' + (it.w / it.h).toFixed(3) + '">' +
+            '<img src="' + IMG + it.img + '" alt="' + gr.name + ' ' + it.label + '" loading="lazy" width="' + it.w + '" height="' + it.h + '">' +
+            '<figcaption>' + it.label + '</figcaption></figure>';
+        }).join('') + '</div>';
+      }).join('');
+    anchor.insertAdjacentElement('afterend', g);
+
+    g.addEventListener('click', function (e) {
+      var tab = e.target.closest('[data-tab]');
+      if (tab) { g.dataset.manual = '1'; showTab(g, +tab.dataset.tab); return; }
+      // клик по фото выбирает такой же размер в опциях
+      var it = e.target.closest('.dv-guide__item');
+      if (!it) return;
+      var lbl = [].filter.call(sizeOpt.querySelectorAll('label'), function (l) {
+        return countOf(l.querySelector('input').value) === +it.dataset.count;
+      })[0];
+      if (lbl) lbl.click();
+    });
+    syncGuide(root);
+  }
+
+  function showTab(g, i) {
+    g.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.toggle('is-active', +b.dataset.tab === i); });
+    g.querySelectorAll('[data-row]').forEach(function (r) { r.hidden = +r.dataset.row !== i; });
+  }
+
+  function countOf(v) { return +((String(v).match(/(\d+)\s*шт/) || [])[1] || 0); }
+
+  // Вкладка — по «Оформлению» (пока юзер не переключил сам), подсветка — по числу цветов в размере
+  function syncGuide(root) {
+    var g = root.querySelector('.dv-guide');
+    if (!g) return;
+    var form = root.querySelector('.dv-optimg-on .t-product__option-item_active input, [data-edition-option-id="Оформление"] .t-product__option-item_active input');
+    if (form && !g.dataset.manual) {
+      GUIDE.groups.forEach(function (gr, i) { if (gr.match.test(form.value)) showTab(g, i); });
+    }
+    var size = root.querySelector('.dv-size .t-product__option-item_active input');
+    var n = size ? countOf(size.value) : 0;
+    g.querySelectorAll('.dv-guide__item').forEach(function (it) { it.classList.toggle('is-active', +it.dataset.count === n); });
   }
 
   function run() { document.querySelectorAll('.t-catalog__prod-snippet__container').forEach(init); }
