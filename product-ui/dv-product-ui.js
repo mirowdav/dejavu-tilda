@@ -5,7 +5,7 @@
     ['Фото букета до отправки', '<rect x="3" y="6" width="18" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 6l1.2-2h4.6l1.2 2" fill="none" stroke="currentColor" stroke-width="1.5"/>'],
     ['Открытка в подарок', '<rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 6.5L12 13l8.5-6.5" fill="none" stroke="currentColor" stroke-width="1.5"/>']
   ];
-  var CATALOG = { href: '/122222', title: 'Каталог' };
+  var CATALOG_TITLE = 'Каталог';
 
   // CSS лежит рядом со скриптом
   var self = document.currentScript || document.querySelector('script[src*="dv-product-ui.js"]');
@@ -32,23 +32,27 @@
     img: IMG + 'sizes.jpg'
   };
 
-  function init(root) {
-    if (root.dataset.dvUi || !root.querySelector('.js-product-edition-option')) return;
+  // Два вида блока Tilda: новый каталог (t-catalog__) и старый магазин (t-store__), разметка одинаковая.
+  // Работаем только в колонке самого товара: ниже бывают «похожие товары» со своими опциями.
+  function init(box) {
+    var root = box.querySelector('.t-catalog__prod-popup__info, .t-store__prod-popup__info');
+    if (!root || root.dataset.dvUi || !root.querySelector('.js-product-edition-option')) return;
     root.dataset.dvUi = '1';
 
-    // Крошки над названием
-    var tw = root.querySelector('.t-catalog__prod-popup__title-wrapper');
+    // Крошки над названием; ссылка — из штатной кнопки «назад» блока
+    var tw = root.querySelector('.t-catalog__prod-popup__title-wrapper, .t-store__prod-popup__title-wrapper');
     var name = root.querySelector('.js-product-name');
+    var back = box.querySelector('.js-catalog-close-text, .js-store-close-text');
     if (tw && name) {
       var c = document.createElement('div');
       c.className = 'dv-crumbs';
-      c.innerHTML = '<a href="' + CATALOG.href + '">' + CATALOG.title + '</a> &nbsp;/&nbsp; ' + name.textContent.replace(/\s*\(\s*\)\s*$/, '');
+      c.innerHTML = '<a href="' + (back ? back.getAttribute('href') : '/catalog') + '">' + CATALOG_TITLE + '</a> &nbsp;/&nbsp; ' + name.textContent.replace(/\s*\(\s*\)\s*$/, '');
       tw.insertBefore(c, tw.firstChild);
       name.textContent = name.textContent.replace(/\s*\(\s*\)\s*$/, '');
     }
 
     // Цены по размерам из описания: «S 25 шт. — 450 AED» (само описание скрыто в CSS)
-    var text = root.querySelector('.js-catalog-prod-all-text');
+    var text = root.querySelector('.js-catalog-prod-all-text, .js-store-prod-all-text');
     var prices = {};
     if (text) {
       text.innerHTML.split(/<br\s*\/?>/i).forEach(function (l) {
@@ -81,7 +85,7 @@
     });
 
     // Преимущества под кнопкой
-    var btns = root.querySelector('.t-catalog__prod-popup__btn-wrapper');
+    var btns = root.querySelector('.t-catalog__prod-popup__btn-wrapper, .t-store__prod-popup__btn-wrapper');
     if (btns) {
       var p = document.createElement('div');
       p.className = 'dv-perks';
@@ -95,7 +99,7 @@
   }
 
   function buildGuide(root) {
-    var anchor = root.querySelector('.dv-perks') || root.querySelector('.t-catalog__prod-popup__btn-wrapper');
+    var anchor = root.querySelector('.dv-perks') || root.querySelector('.t-catalog__prod-popup__btn-wrapper, .t-store__prod-popup__btn-wrapper');
     if (!GUIDE || !anchor || !root.querySelector('.dv-size')) return;
     var g = document.createElement('button');
     g.type = 'button';
@@ -123,7 +127,7 @@
     document.body.appendChild(z);
   }
 
-  function run() { document.querySelectorAll('.t-catalog__prod-snippet__container').forEach(init); }
+  function run() { document.querySelectorAll('.t-catalog__prod-snippet__container, .t-store__prod-snippet__container').forEach(init); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
   // карточка дорисовывается Tilda асинхронно
   var tries = 0, t = setInterval(function () { run(); if (++tries > 20) clearInterval(t); }, 300);
