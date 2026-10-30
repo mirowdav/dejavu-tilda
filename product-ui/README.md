@@ -32,13 +32,21 @@ window.DV_SIZE_GUIDE = false; // или { title, text, img: 'https://...' }
     if (/[?&]dvui=0/.test(location.search)) localStorage.removeItem('dvui');
     if (!localStorage.getItem('dvui')) return;
   } catch (e) { return; }
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@v0.1.9/product-ui/dv-product-ui.js';
-  (document.body || document.head).appendChild(s);
+  // последний тег репозитория: при релизе ссылку в Tilda не меняем
+  var repo = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@';
+  function load(v) {
+    var s = document.createElement('script');
+    s.src = repo + v + '/product-ui/dv-product-ui.js';
+    (document.body || document.head).appendChild(s);
+  }
+  fetch('https://data.jsdelivr.com/v1/packages/gh/mirowdav/dejavu-tilda/resolved?specifier=latest')
+    .then(function (r) { return r.json(); })
+    .then(function (d) { load(d.version); })
+    .catch(function () { load('v0.1.9'); });
 })();
 </script>
 ```
 
-Подключено по тегу. `@main` пробовали: сброс кэша jsDelivr расходится по серверам минутами, а браузер держит файл ветки до 7 дней.
+Загрузчик берёт последний тег репозитория через API jsDelivr (ответ кэшируется на 5 минут), поэтому релиз = новый тег, Tilda не трогаем. Ссылка на тег у jsDelivr не устаревает, в отличие от `@main` (тот кэшируется до 12 часов, сброс расходится по серверам минутами, браузер держит файл до 7 дней). Теги общие на весь репозиторий: «последний» — самый старший по номеру. Сразу после пуша тега файлы с CDN не запрашивать — jsDelivr может закэшировать 404; лечится purge по тегу.
 
 Локальная проверка: `before.html` / `after.html` (копии страницы, в git не входят).
