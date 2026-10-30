@@ -22,16 +22,13 @@ window.DV_SIZE_GUIDE = false; // или { title, text, img: 'https://...' }
 
 ## Тест на боевом сайте
 
-«Настройки сайта → Вставка кода → перед `</body>`». Включается только у того, кто открыл сайт с `?dvui=1`, выключить — `?dvui=0`.
+«Настройки сайта → Вставка кода → перед `</body>`». Работает только на странице, в адресе которой есть `?dvui=1`; без параметра — обычный сайт.
 
 ```html
 <script>
 (function () {
-  try {
-    if (/[?&]dvui=1/.test(location.search)) localStorage.setItem('dvui', '1');
-    if (/[?&]dvui=0/.test(location.search)) localStorage.removeItem('dvui');
-    if (!localStorage.getItem('dvui')) return;
-  } catch (e) { return; }
+  // только когда в адресе есть ?dvui=1, без запоминания
+  if (!/[?&]dvui=1(&|$)/.test(location.search)) return;
   // последний тег репозитория: при релизе ссылку в Tilda не меняем
   var repo = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@';
   function load(v) {
