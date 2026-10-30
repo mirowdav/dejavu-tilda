@@ -22,24 +22,21 @@ window.DV_SIZE_GUIDE = false; // или { title, text, img: 'https://...' }
 
 ## Тест на боевом сайте
 
-«Настройки сайта → Вставка кода → перед `</body>`». Работает только на странице, в адресе которой есть `?dvui=1`; без параметра — обычный сайт.
+«Настройки сайта → Вставка кода → перед `</body>`». Загрузчик ничего не решает: находит последний тег и подключает [boot.js](../boot.js). Что и когда включать (сейчас — только при `?dvui=1` в адресе), решает boot.js, поэтому Tilda больше не трогаем.
 
 ```html
 <script>
 (function () {
-  // только когда в адресе есть ?dvui=1, без запоминания
-  if (!/[?&]dvui=1(&|$)/.test(location.search)) return;
-  // последний тег репозитория: при релизе ссылку в Tilda не меняем
   var repo = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@';
   function load(v) {
     var s = document.createElement('script');
-    s.src = repo + v + '/product-ui/dv-product-ui.js';
+    s.src = repo + v + '/boot.js';
     (document.body || document.head).appendChild(s);
   }
   fetch('https://data.jsdelivr.com/v1/packages/gh/mirowdav/dejavu-tilda/resolved?specifier=latest')
     .then(function (r) { return r.json(); })
     .then(function (d) { load(d.version); })
-    .catch(function () { load('v0.1.9'); });
+    .catch(function () { load('v0.1.10'); });
 })();
 </script>
 ```
