@@ -96,6 +96,16 @@
     }
 
     buildGuide(root);
+
+    // Полку допов (её рисует addons в конце колонки, позже нас) ставим после опций, перед количеством/кнопкой
+    if (btns) {
+      var placeShelf = function () {
+        var shelf = root.querySelector('.dv-shelf_product');
+        if (shelf && shelf.nextElementSibling !== btns) btns.parentNode.insertBefore(shelf, btns);
+      };
+      new MutationObserver(placeShelf).observe(root, { childList: true });
+      placeShelf();
+    }
   }
 
   function buildGuide(root) {

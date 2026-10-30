@@ -8,20 +8,12 @@
   --dv-radius:14px;
 }
 
-/* Сетка: фото слева липкое, инфо справа с воздухом */
+/* Сетка самого товара (не «похожих товаров» ниже): фото слева липкое, инфо справа. Галерею не трогаем. */
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container){padding-top:96px!important}
-:is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .t-container > div{display:flex;align-items:flex-start}
+:is(.t-catalog__product-snippet,.t-store__product-snippet) > .t-container > div{display:flex;align-items:flex-start}
 :is(.t-catalog__prod-popup__col-left,.t-store__prod-popup__col-left){position:sticky;top:96px}
 :is(.t-catalog__prod-popup__col-right,.t-store__prod-popup__col-right){padding-left:32px;box-sizing:border-box}
 
-/* Галерея: прямые углы, обводка 1px, мягкий фон, превью рядом */
-:is(.t-catalog__prod-popup__slider,.t-store__prod-popup__slider) .t-slds__container{border:1px solid var(--dv-line);overflow:hidden;background:var(--dv-soft)!important}
-:is(.t-catalog__prod-popup__slider,.t-store__prod-popup__slider) .t-slds__thumbsbullet-wrapper{display:flex;gap:10px;margin-top:12px}
-:is(.t-catalog__prod-popup__slider,.t-store__prod-popup__slider) .t-slds__thumbsbullet{width:72px!important;height:72px!important;margin:0!important;border:1px solid var(--dv-line);box-sizing:border-box;overflow:hidden;opacity:.55;transition:opacity .2s}
-:is(.t-catalog__prod-popup__slider,.t-store__prod-popup__slider) .t-slds__thumbsbullet_active,
-:is(.t-catalog__prod-popup__slider,.t-store__prod-popup__slider) .t-slds__thumbsbullet:hover{opacity:1}
-:is(.t-catalog__prod-popup__slider,.t-store__prod-popup__slider) .t-slds__thumbsbullet-border{border-radius:0;border-width:1px!important;border-color:var(--dv-ink)!important}
-:is(.t-catalog__prod-popup__slider,.t-store__prod-popup__slider) .t-slds__arrow{border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 
 /* Заголовок и цена */
 .dv-crumbs{font:400 13px/1.4 Manrope,Arial,sans-serif;color:var(--dv-muted);margin-bottom:14px}
@@ -118,7 +110,7 @@
   :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list::-webkit-scrollbar{display:none}
   :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card{flex:0 0 38%;scroll-snap-align:start}
   :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container){padding-top:64px!important}
-  :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .t-container > div{display:block}
+  :is(.t-catalog__product-snippet,.t-store__product-snippet) > .t-container > div{display:block}
   :is(.t-catalog__prod-popup__col-left,.t-store__prod-popup__col-left){position:static}
   :is(.t-catalog__prod-popup__col-right,.t-store__prod-popup__col-right){padding-left:20px;margin-top:20px}
   :is(.t-catalog__prod-popup__name,.t-store__prod-popup__name){font-size:26px!important}
