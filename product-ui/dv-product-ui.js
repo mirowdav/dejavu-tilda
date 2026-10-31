@@ -7,22 +7,28 @@
   ];
   var CATALOG_TITLE = 'Каталог';
 
-  // CSS лежит рядом со скриптом
   var self = document.currentScript || document.querySelector('script[src*="dv-product-ui.js"]');
-  if (self && self.src && !document.getElementById('dv-product-ui-css')) {
-    var l = document.createElement('link');
-    l.id = 'dv-product-ui-css';
-    l.rel = 'stylesheet';
-    l.href = self.src.replace(/\.js(\?|$)/, '.css$1'); // метку ?t= из загрузчика тоже передаём
-    document.head.appendChild(l);
-  }
   var IMG = self && self.src ? self.src.replace(/dv-product-ui\.js(\?.*)?$/, 'img/') : '';
 
-  // Допы (модуль addons) из того же тега: полка в карточке, попап, блок в корзине. Отключить: window.DV_ADDONS_SKIP = true
-  if (self && self.src && !window.DV_ADDONS_SKIP && !window.__dvAddonsLoaded && !document.querySelector('script[src*="dv-addons.js"]')) {
-    var a = document.createElement('script');
-    a.src = self.src.replace(/product-ui\/dv-product-ui\.js(\?.*)?$/, 'addons/src/dv-addons.js');
-    (document.body || document.head).appendChild(a);
+  function boot() {
+    // CSS лежит рядом со скриптом
+    if (self && self.src && !document.getElementById('dv-product-ui-css')) {
+      var l = document.createElement('link');
+      l.id = 'dv-product-ui-css';
+      l.rel = 'stylesheet';
+      l.href = self.src.replace(/\.js(\?|$)/, '.css$1'); // метку ?t= из загрузчика тоже передаём
+      document.head.appendChild(l);
+    }
+    // Допы (модуль addons) из того же тега: полка в карточке, попап, блок в корзине. Отключить: window.DV_ADDONS_SKIP = true
+    if (self && self.src && !window.DV_ADDONS_SKIP && !window.__dvAddonsLoaded && !document.querySelector('script[src*="dv-addons.js"]')) {
+      var a = document.createElement('script');
+      a.src = self.src.replace(/product-ui\/dv-product-ui\.js(\?.*)?$/, 'addons/src/dv-addons.js');
+      (document.body || document.head).appendChild(a);
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+    // карточка дорисовывается Tilda асинхронно
+    var tries = 0, t = setInterval(function () { run(); if (++tries > 20) clearInterval(t); }, 300);
   }
 
   // Плашка «Как выглядят размеры» с фото на весь экран. Переопределить: window.DV_SIZE_GUIDE = {...}, отключить: false
@@ -140,7 +146,29 @@
   }
 
   function run() { document.querySelectorAll('.t-catalog__prod-snippet__container, .t-store__prod-snippet__container').forEach(init); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
-  // карточка дорисовывается Tilda асинхронно
-  var tries = 0, t = setInterval(function () { run(); if (++tries > 20) clearInterval(t); }, 300);
+
+  // Загрузчик в Tilda берёт номер последнего тега из API jsDelivr, но браузер держит этот ответ в кэше до часа
+  // и после релиза может подсунуть старую версию. Сверяемся в обход кэша браузера; если мы старее —
+  // подгружаем вместо себя актуальную (она уже не проверяет). Локально (не с jsDelivr) сразу стартуем.
+  var own = self && self.src && (self.src.match(/dejavu-tilda@v?(\d+\.\d+\.\d+)\//) || [])[1];
+  function newer(a, b) {
+    a = a.split('.'); b = b.split('.');
+    for (var i = 0; i < 3; i++) if (+a[i] !== +b[i]) return +a[i] > +b[i];
+    return false;
+  }
+  if (own && !window.__dvUiChecked) {
+    window.__dvUiChecked = true;
+    fetch('https://data.jsdelivr.com/v1/packages/gh/mirowdav/dejavu-tilda/resolved?specifier=latest', { cache: 'no-cache' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.version || !newer(d.version, own)) return boot();
+        var s = document.createElement('script');
+        s.src = self.src.replace(/@v?\d+\.\d+\.\d+\//, '@' + d.version + '/');
+        (document.body || document.head).appendChild(s);
+      })
+      .catch(boot);
+  } else {
+    window.__dvUiChecked = true;
+    boot();
+  }
 })();
