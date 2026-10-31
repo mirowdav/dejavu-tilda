@@ -17,13 +17,13 @@
 .dv-crumbs a{color:inherit;text-decoration:none}
 .dv-crumbs a:hover{color:var(--dv-ink)}
 :is(.t-catalog__prod-popup__name,.t-store__prod-popup__name){font-size:34px!important;line-height:1.15!important;font-weight:600!important;letter-spacing:-.01em;color:var(--dv-ink)}
-:is(.t-catalog__prod-popup__price-wrapper,.t-store__prod-popup__price-wrapper){display:block!important;width:100%;margin-top:14px!important;padding-bottom:24px;border-bottom:1px solid var(--dv-line)}
+:is(.t-catalog__prod-popup__price-wrapper,.t-store__prod-popup__price-wrapper){display:block!important;width:100%;margin-top:14px!important}
 :is(.t-catalog__prod-popup__price,.t-store__prod-popup__price){font-size:26px!important;font-weight:600!important}
 :is(.t-catalog__prod-popup__price-currency,.t-store__prod-popup__price-currency){font-size:16px;font-weight:500;color:var(--dv-muted);margin-left:6px}
 :is(.t-catalog__prod-popup__price_old,.t-store__prod-popup__price_old){color:var(--dv-muted)!important;font-size:18px!important}
 
 /* Подписи опций */
-:is(.t-catalog__prod-popup__info,.t-store__prod-popup__info) .t-product__option{margin-top:24px!important}
+:is(.t-catalog__prod-popup__info,.t-store__prod-popup__info) .t-product__option{margin-top:30px!important}
 :is(.t-catalog__prod-popup__info,.t-store__prod-popup__info) .t-product__option > .t-product__option-title{
   font-size:12px!important;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dv-muted);margin-bottom:10px!important}
 .dv-opt-value{color:var(--dv-ink);text-transform:none;letter-spacing:0;font-weight:500;margin-left:6px}
@@ -88,7 +88,7 @@
 
 /* Допы (модуль addons) в карточке: компактная сетка в стиле карточки. Ссылка «Добавьте шары…» не нужна — полка рядом */
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-hint{display:none!important}
-:is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product{margin:28px 0 0;padding-top:24px;border-top:1px solid var(--dv-line)}
+:is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product{margin:30px 0 0;padding-top:0;border-top:0}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__title{margin-bottom:14px;font:600 12px/1.3 Manrope,Arial,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--dv-muted)}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list{grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 20px}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card{padding:0;gap:4px;border:0;border-radius:0;background:none}
