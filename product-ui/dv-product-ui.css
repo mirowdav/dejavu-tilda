@@ -8,10 +8,7 @@
   --dv-radius:14px;
 }
 
-/* Сетка самого товара (не «похожих товаров» ниже): фото слева липкое, инфо справа. Галерею не трогаем. */
-:is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container){padding-top:96px!important}
-:is(.t-catalog__product-snippet,.t-store__product-snippet) > .t-container > div{display:flex;align-items:flex-start}
-:is(.t-catalog__prod-popup__col-left,.t-store__prod-popup__col-left){position:sticky;top:96px}
+/* Левую колонку (галерею) и сетку Tilda не трогаем: её слайдер перестраивается при смене опций. Только отступ в правой колонке. */
 :is(.t-catalog__prod-popup__col-right,.t-store__prod-popup__col-right){padding-left:32px;box-sizing:border-box}
 
 
@@ -109,9 +106,6 @@
   :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:0 20px;scroll-padding:0 20px;scrollbar-width:none;gap:16px}
   :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list::-webkit-scrollbar{display:none}
   :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card{flex:0 0 38%;scroll-snap-align:start}
-  :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container){padding-top:64px!important}
-  :is(.t-catalog__product-snippet,.t-store__product-snippet) > .t-container > div{display:block}
-  :is(.t-catalog__prod-popup__col-left,.t-store__prod-popup__col-left){position:static}
   :is(.t-catalog__prod-popup__col-right,.t-store__prod-popup__col-right){padding-left:20px;margin-top:20px}
   :is(.t-catalog__prod-popup__name,.t-store__prod-popup__name){font-size:26px!important}
   .dv-perks{grid-template-columns:1fr}
