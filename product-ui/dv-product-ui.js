@@ -61,7 +61,7 @@
       });
     }
 
-    // Опции: значение рядом с заголовком, размер — в 3 строки
+    // Опции: размер — в 3 строки; выбранное значение подписываем только у цвета (у кружков нет текста)
     root.querySelectorAll('.js-product-edition-option').forEach(function (opt) {
       var title = opt.querySelector('.js-product-edition-option-name');
       var isSize = /размер|size/i.test(opt.dataset.editionOptionId || '');
@@ -72,12 +72,13 @@
           if (m) s.innerHTML = '<b>' + m[1] + '</b>' + m[2] + (prices[m[1]] ? '<i>' + prices[m[1]] + ' AED</i>' : '');
         });
       }
+      if (!opt.querySelector('.t-product__option-variants_color')) return;
       var val = document.createElement('span');
       val.className = 'dv-opt-value';
       title.appendChild(val);
       var sync = function () {
         var a = opt.querySelector('.t-product__option-item_active input');
-        val.textContent = isSize || !a ? '' : a.value;
+        val.textContent = a ? a.value : '';
       };
       opt.addEventListener('change', function () { setTimeout(sync, 0); });
       opt.addEventListener('click', function () { setTimeout(sync, 0); });
@@ -109,8 +110,9 @@
   }
 
   function buildGuide(root) {
-    var anchor = root.querySelector('.dv-perks') || root.querySelector('.t-catalog__prod-popup__btn-wrapper, .t-store__prod-popup__btn-wrapper');
-    if (!GUIDE || !anchor || !root.querySelector('.dv-size')) return;
+    // сразу под кнопками размера
+    var anchor = root.querySelector('.dv-size');
+    if (!GUIDE || !anchor) return;
     var g = document.createElement('button');
     g.type = 'button';
     g.className = 'dv-guide';

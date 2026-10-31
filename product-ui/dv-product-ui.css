@@ -79,7 +79,7 @@
 :is(.t-catalog__prod-popup__text,.t-store__prod-popup__text){display:none!important}
 
 /* Плашка «Как выглядят размеры» и фото на весь экран */
-.dv-guide{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;margin-top:16px;padding:10px 16px 10px 10px;border:1px solid var(--dv-line);border-radius:12px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:var(--dv-ink);transition:border-color .15s}
+.dv-guide{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;margin-top:12px;padding:10px 16px 10px 10px;border:1px solid var(--dv-line);border-radius:12px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:var(--dv-ink);transition:border-color .15s}
 .dv-guide:hover{border-color:var(--dv-ink)}
 .dv-guide img{flex:none;width:56px;height:72px;object-fit:cover;object-position:center 20%;border:1px solid var(--dv-line);box-sizing:border-box}
 .dv-guide__txt{flex:1;display:flex;flex-direction:column;gap:3px;font:400 13px/1.35 Manrope,Arial,sans-serif;color:var(--dv-muted)}
@@ -93,7 +93,7 @@
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-hint{display:none!important}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product{margin:28px 0 0;padding-top:24px;border-top:1px solid var(--dv-line)}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__title{margin-bottom:14px;font:600 12px/1.3 Manrope,Arial,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--dv-muted)}
-:is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+:is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list{grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 20px}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card{padding:0;gap:4px;border:0;border-radius:0;background:none}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card__img{border-radius:0;border:1px solid var(--dv-line);margin-bottom:4px}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card__title{font-size:13px;min-height:34px;color:var(--dv-ink)}
@@ -106,7 +106,7 @@
 /* Мобильная версия */
 @media (max-width:960px){
   /* допы — лентой со свайпом, следующая карточка выглядывает */
-  :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:0 20px;scroll-padding:0 20px;scrollbar-width:none}
+  :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:0 20px;scroll-padding:0 20px;scrollbar-width:none;gap:16px}
   :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list::-webkit-scrollbar{display:none}
   :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card{flex:0 0 38%;scroll-snap-align:start}
   :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container){padding-top:64px!important}
