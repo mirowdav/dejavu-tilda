@@ -19,13 +19,15 @@
 
 .dv-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  min-height: 44px; padding: 0 20px; border: 1px solid var(--dv-brand); border-radius: 30px;
+  min-height: 44px; padding: 0 20px; border: 1px solid var(--dv-brand); border-radius: 0;
   background: var(--dv-brand); color: #fff; font: inherit; font-size: 15px; cursor: pointer;
-  transition: opacity .2s;
+  transition: opacity .2s, background-color .15s, color .15s;
 }
 .dv-btn:disabled { opacity: .45; cursor: default; }
 .dv-btn_sm { min-height: 34px; padding: 0 14px; font-size: 13px; }
 .dv-btn_ghost { background: transparent; color: var(--dv-brand); }
+/* наведение: белая с бордовой рамкой и текстом */
+.dv-btn:not(.dv-btn_ghost):not(:disabled):hover { background: #fff; color: var(--dv-brand); border-color: var(--dv-brand); }
 
 /* плашка и подсказка на карточке товара */
 .dv-hint {
