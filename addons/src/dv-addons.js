@@ -148,6 +148,8 @@
       if (v.img) img = v.img;
       if (v.color && !color) color = v.color;
     });
+    // относительный путь (img/heart.jpg) — от папки модуля, чтобы фото ехали тем же тегом
+    if (img && !/^(https?:|data:|\/\/)/.test(img)) img = BASE_URL + img;
     return img || placeholderImg(color);
   }
 
