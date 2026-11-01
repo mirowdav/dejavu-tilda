@@ -65,7 +65,6 @@
   .dv-card__btn { min-height: 30px; padding: 0 6px; font-size: 12px; }
   .dv-card__badge { top: 10px; left: 10px; padding: 2px 6px; font-size: 10px; }
 }
-.dv-cart_sidebar .dv-shelf__list { gap: 8px; }
 .dv-cart_sidebar .dv-card__btn { padding: 0 6px; }
 
 /* блок в корзине */
@@ -73,8 +72,9 @@
 /* в боковой корзине линию под товарами рисует сама Tilda (.t706__sidebar-products), на странице корзины — нет */
 .dv-cart_cartpage { border-top: 1px solid var(--dv-line); }
 .dv-cart .dv-shelf { margin: 8px 0 16px; }
-/* в корзине карточки допов без рамки */
-.dv-cart .dv-card { padding: 0; border: 0; }
+/* в корзине карточки допов без рамки, с воздухом между ними */
+.dv-cart .dv-shelf__list { gap: 22px 14px; }
+.dv-cart .dv-card { padding: 0; border: 0; gap: 8px; }
 /* десктоп (порог Tilda — 960px): допы предлагаем в боковой корзине, на странице с формой не повторяем */
 @media (min-width: 961px) {
   .dv-cart_cartpage { display: none; }
