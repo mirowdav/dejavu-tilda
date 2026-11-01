@@ -33,9 +33,8 @@
       popupTitle: 'Товар добавлен. Дополните подарок',
       toCheckout: 'Перейти к оформлению',
       continueShopping: 'Продолжить покупки',
-      choose: 'Выбрать',
-      add: 'Добавить',
-      added: 'Добавлено',
+      view: 'Смотреть',
+      toCart: 'В корзину',
       inCart: 'В корзине',
       from: 'от',
       soldOut: 'Нет в наличии',
@@ -214,7 +213,7 @@
               '<div class="dv-card__badge">' + esc(T.inCart) + '</div>' +
               '<div class="dv-card__title">' + esc(p.title) + '</div>' +
               '<div class="dv-card__price">' + (hasChoice(p) ? T.from + ' ' : '') + formatPrice(minPrice(p)) + '</div>' +
-              '<button type="button" class="dv-btn dv-btn_sm dv-card__btn">' + esc(hasChoice(p) ? T.choose : T.add) + '</button>' +
+              '<button type="button" class="dv-btn dv-btn_sm dv-card__btn">' + esc(T.view) + '</button>' +
             '</div>';
         }).join('') + '</div>' +
       '</div>'
@@ -224,24 +223,11 @@
       var card = e.target.closest('.dv-card');
       if (!card) return;
       var product = findProduct(card.getAttribute('data-id'));
-      if (!product) return;
-      if (hasChoice(product)) {
-        openPicker(product);
-      } else {
-        addToCart(product, defaultSelection(product), 1);
-        flash(card.querySelector('.dv-card__btn'));
-      }
+      // всегда открываем окно товара, даже без параметров: в корзину кладут оттуда
+      if (product) openPicker(product);
     });
 
     return root;
-  }
-
-  function flash(btn) {
-    if (!btn) return;
-    var text = btn.textContent;
-    btn.textContent = T.added;
-    btn.disabled = true;
-    setTimeout(function () { btn.textContent = text; btn.disabled = false; }, 1200);
   }
 
   function findProduct(id) {
@@ -292,7 +278,7 @@
           '<div class="dv-picker__price"></div>' +
         '</div>' +
         '<div class="dv-picker__stock"></div>' +
-        '<button type="button" class="dv-btn dv-picker__add">' + esc(T.add) + '</button>' +
+        '<button type="button" class="dv-btn dv-picker__add">' + esc(T.toCart) + '</button>' +
       '</div></div>');
 
     var optsEl = box.querySelector('.dv-picker__opts');

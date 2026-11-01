@@ -19,7 +19,7 @@
 
 .dv-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  min-height: 44px; padding: 0 20px; border: 1px solid var(--dv-brand); border-radius: 0;
+  min-height: 44px; padding: 0 20px; border: 1.2px solid var(--dv-brand); border-radius: 0;
   background: var(--dv-brand); color: #fff; font: inherit; font-size: 15px; cursor: pointer;
   transition: opacity .2s, background-color .15s, color .15s;
 }
@@ -73,6 +73,8 @@
 /* в боковой корзине линию под товарами рисует сама Tilda (.t706__sidebar-products), на странице корзины — нет */
 .dv-cart_cartpage { border-top: 1px solid var(--dv-line); }
 .dv-cart .dv-shelf { margin: 8px 0 16px; }
+/* в корзине карточки допов без рамки */
+.dv-cart .dv-card { padding: 0; border: 0; }
 /* десктоп (порог Tilda — 960px): допы предлагаем в боковой корзине, на странице с формой не повторяем */
 @media (min-width: 961px) {
   .dv-cart_cartpage { display: none; }
@@ -110,7 +112,7 @@
 .dv-opt__title b { color: var(--dv-text); font-weight: 500; }
 .dv-opt__values { display: flex; flex-wrap: wrap; gap: 8px; }
 .dv-chip {
-  min-height: 34px; padding: 0 12px; border: 1px solid var(--dv-line); border-radius: 18px;
+  min-height: 34px; padding: 0 12px; border: 1.2px solid var(--dv-line); border-radius: 18px;
   background: var(--dv-bg); color: var(--dv-text); font: inherit; font-size: 13px; cursor: pointer;
 }
 .dv-chip_active { border-color: var(--dv-brand); box-shadow: inset 0 0 0 1px var(--dv-brand); }
