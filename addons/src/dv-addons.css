@@ -73,7 +73,7 @@
 .dv-cart_cartpage { border-top: 1px solid var(--dv-line); }
 .dv-cart .dv-shelf { margin: 8px 0 16px; }
 /* в корзине карточки допов без рамки, с воздухом между ними */
-.dv-cart .dv-shelf__list { gap: 22px 14px; }
+.dv-cart .dv-shelf__list { gap: 20px; }
 .dv-cart .dv-card { padding: 0; border: 0; gap: 8px; }
 /* десктоп (порог Tilda — 960px): допы предлагаем в боковой корзине, на странице с формой не повторяем */
 @media (min-width: 961px) {
