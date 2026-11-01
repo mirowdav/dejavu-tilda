@@ -147,23 +147,46 @@
 
   function run() { document.querySelectorAll('.t-catalog__prod-snippet__container, .t-store__prod-snippet__container').forEach(init); }
 
-  // Загрузчик в Tilda берёт номер последнего тега из API jsDelivr, но браузер держит этот ответ в кэше до часа
-  // и после релиза может подсунуть старую версию. Сверяемся в обход кэша браузера; если мы старее —
-  // подгружаем вместо себя актуальную (она уже не проверяет). Локально (не с jsDelivr) сразу стартуем.
+  // Загрузчик в Tilda берёт номер последнего тега из API jsDelivr, а тот узнаёт о новом теге минут через 5–7,
+  // да ещё браузер держит его ответ в кэше. Поэтому сверяемся сами: сначала с тегами GitHub (видны сразу после
+  // пуша, кэш 60 с), при ошибке — с jsDelivr. Если мы старее — подгружаем вместо себя актуальную (она уже
+  // не проверяет); не загрузилась — стартуем сами. Локально (не с jsDelivr) сразу стартуем.
   var own = self && self.src && (self.src.match(/dejavu-tilda@v?(\d+\.\d+\.\d+)\//) || [])[1];
   function newer(a, b) {
     a = a.split('.'); b = b.split('.');
     for (var i = 0; i < 3; i++) if (+a[i] !== +b[i]) return +a[i] > +b[i];
     return false;
   }
+  function json(url) {
+    return fetch(url, { cache: 'no-cache' }).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    });
+  }
+  function latest() {
+    return json('https://api.github.com/repos/mirowdav/dejavu-tilda/tags?per_page=100')
+      .then(function (tags) {
+        var best = null;
+        tags.forEach(function (t) {
+          var v = (t.name.match(/^v?(\d+\.\d+\.\d+)$/) || [])[1];
+          if (v && (!best || newer(v, best))) best = v;
+        });
+        if (!best) throw new Error('no tags');
+        return best;
+      })
+      .catch(function () {
+        return json('https://data.jsdelivr.com/v1/packages/gh/mirowdav/dejavu-tilda/resolved?specifier=latest')
+          .then(function (d) { return d.version; });
+      });
+  }
   if (own && !window.__dvUiChecked) {
     window.__dvUiChecked = true;
-    fetch('https://data.jsdelivr.com/v1/packages/gh/mirowdav/dejavu-tilda/resolved?specifier=latest', { cache: 'no-cache' })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d.version || !newer(d.version, own)) return boot();
+    latest()
+      .then(function (v) {
+        if (!v || !newer(v, own)) return boot();
         var s = document.createElement('script');
-        s.src = self.src.replace(/@v?\d+\.\d+\.\d+\//, '@' + d.version + '/');
+        s.src = self.src.replace(/@v?\d+\.\d+\.\d+\//, '@' + v + '/');
+        s.onerror = boot;
         (document.body || document.head).appendChild(s);
       })
       .catch(boot);
