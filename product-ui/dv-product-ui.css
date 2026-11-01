@@ -97,7 +97,7 @@
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card__price{font-size:13px;font-weight:600;color:var(--dv-ink)}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card__btn{margin-top:6px;min-height:34px;border:1px solid #801124;border-radius:0;background:#801124;color:#fff;font-size:13px;font-weight:500;transition:background .15s,color .15s}
 :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card__btn:not(:disabled):hover{background:#fff;color:#801124;border-color:#801124}
-:is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card__badge{top:8px;left:8px;border-radius:0;background:var(--dv-ink)}
+:is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card__badge{top:8px;left:8px;padding:4px 8px;border-radius:0;background:#801124;color:#fff;font:500 11px/1.2 Manrope,Arial,sans-serif}
 
 /* Мобильная версия */
 @media (max-width:960px){

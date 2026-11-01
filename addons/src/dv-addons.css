@@ -50,7 +50,7 @@
 .dv-card__price { font-size: 14px; font-weight: 600; }
 .dv-card__btn { margin-top: auto; }
 .dv-card__badge {
-  display: none; position: absolute; top: 14px; left: 14px; padding: 3px 8px; border-radius: 10px;
+  display: none; position: absolute; top: 14px; left: 14px; padding: 3px 8px; border-radius: 0;
   background: var(--dv-brand); color: #fff; font-size: 11px;
 }
 .dv-card_incart { border-color: var(--dv-brand); }
