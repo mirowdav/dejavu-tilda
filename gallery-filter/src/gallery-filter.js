@@ -55,6 +55,17 @@ function getSelectedValues() {
     return values;
 }
 
+function normalizeToken(s) {
+    return String(s).replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+// Подпись фото — значения опций через «;». Сравниваем по точному совпадению значения,
+// а не по вхождению подстроки: иначе «L» находится внутри «XL», «M» внутри «XM» и т.п.
+function captionMatches(caption, selected) {
+    const tokens = String(caption).split(';').map(normalizeToken);
+    return selected.every(v => tokens.includes(normalizeToken(v)));
+}
+
 function getImagesForSelection() {
     const selected = getSelectedValues();
     if (!selected.length) {
@@ -62,9 +73,7 @@ function getImagesForSelection() {
         return null;
     }
     console.log('[gallery-filter] captionImages для сравнения:', captionImages);
-    const matchedGroups = captionImages.filter(g =>
-        selected.every(v => g.caption.indexOf(v) !== -1)
-    );
+    const matchedGroups = captionImages.filter(g => captionMatches(g.caption, selected));
     console.log('[gallery-filter] matchedGroups:', matchedGroups);
     if (!matchedGroups.length) {
         console.warn('[gallery-filter] Ни одна caption-группа не подошла под выбранные значения:', selected, '→ показываем заглушку');
