@@ -1,11 +1,11 @@
 /* Dejavu: доп. разметка для карточки товара (крошки, размеры, преимущества, плашка с размерами). */
 (function () {
   var PERKS = [
-    ['Доставка в день заказа', '<path d="M3 7h11v8H3zM14 10h4l3 3v2h-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="7" cy="17" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="17" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/>'],
-    ['Фото букета до отправки', '<rect x="3" y="6" width="18" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 6l1.2-2h4.6l1.2 2" fill="none" stroke="currentColor" stroke-width="1.5"/>'],
-    ['Открытка в подарок', '<rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 6.5L12 13l8.5-6.5" fill="none" stroke="currentColor" stroke-width="1.5"/>']
+    ['Same-day delivery', '<path d="M3 7h11v8H3zM14 10h4l3 3v2h-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="7" cy="17" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="17" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/>'],
+    ['Photo of your bouquet before dispatch', '<rect x="3" y="6" width="18" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 6l1.2-2h4.6l1.2 2" fill="none" stroke="currentColor" stroke-width="1.5"/>'],
+    ['Free greeting card', '<rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 6.5L12 13l8.5-6.5" fill="none" stroke="currentColor" stroke-width="1.5"/>']
   ];
-  var CATALOG_TITLE = 'Каталог';
+  var CATALOG_TITLE = 'Catalog';
 
   var self = document.currentScript || document.querySelector('script[src*="dv-product-ui.js"]');
   var IMG = self && self.src ? self.src.replace(/dv-product-ui\.js(\?.*)?$/, 'img/') : '';
@@ -31,12 +31,33 @@
     var tries = 0, t = setInterval(function () { run(); if (++tries > 20) clearInterval(t); }, 300);
   }
 
-  // Плашка «Как выглядят размеры» с фото на весь экран. Переопределить: window.DV_SIZE_GUIDE = {...}, отключить: false
+  // Плашка «Как выглядят размеры» с фото на весь экран. Фото — из характеристики товара «Size guide» (ссылка на картинку);
+  // нет характеристики — нет плашки. Переопределить: window.DV_SIZE_GUIDE = {...} (img — одна картинка на все товары), отключить: false
   var GUIDE = window.DV_SIZE_GUIDE !== undefined ? window.DV_SIZE_GUIDE : {
-    title: 'Как выглядят размеры',
-    text: 'Букеты и коробки в сравнении — нажмите, чтобы увеличить',
-    img: IMG + 'sizes.jpg'
+    title: 'How the sizes look',
+    text: 'Bouquets and boxes side by side — tap to enlarge',
+    img: ''
   };
+  var GUIDE_CHARC = /size\s*guide|как выглядят размеры/i;
+
+  // Картинки опции «Оформление» — одни на все товары (на en-сайте значения bouquet / box / basket).
+  // Переопределить: window.DV_DESIGN_IMAGES = { 'bouquet': 'https://...' }
+  var DESIGN_OPT = /оформление|design|packaging/i;
+  var DESIGN_IMAGES = window.DV_DESIGN_IMAGES || {
+    'bouquet': 'https://static.tildacdn.net/tila3732-3932-4766-a338-376638656437/81834943.png',
+    'box': 'https://static.tildacdn.net/tila3465-3930-4262-b762-346661383831/77404157jpg-Photoroo.png',
+    'basket': 'https://static.tildacdn.net/tila6566-3964-4164-a461-626337323965/pure-love-wow-1.png',
+    'букет': 'https://static.tildacdn.net/tila3732-3932-4766-a338-376638656437/81834943.png',
+    'коробка': 'https://static.tildacdn.net/tila3465-3930-4262-b762-346661383831/77404157jpg-Photoroo.png',
+    'корзина': 'https://static.tildacdn.net/tila6566-3964-4164-a461-626337323965/pure-love-wow-1.png'
+  };
+
+  // Данные товара (варианты с ценами, характеристики) Tilda кладёт в код страницы товара: var product = {...};
+  function productData() {
+    var s = [].find.call(document.scripts, function (x) { return x.textContent.indexOf('var product = {') > -1; });
+    var m = s && s.textContent.match(/var product = (\{[\s\S]*?\});\s*\n/);
+    try { return m ? JSON.parse(m[1]) : null; } catch (e) { return null; }
+  }
 
   // Два вида блока Tilda: новый каталог (t-catalog__) и старый магазин (t-store__), разметка одинаковая.
   // Работаем только в колонке самого товара: ниже бывают «похожие товары» со своими опциями.
@@ -57,15 +78,10 @@
       name.textContent = name.textContent.replace(/\s*\(\s*\)\s*$/, '');
     }
 
-    // Цены по размерам из описания: «S 25 шт. — 450 AED» (само описание скрыто в CSS)
-    var text = root.querySelector('.js-catalog-prod-all-text, .js-store-prod-all-text');
-    var prices = {};
-    if (text) {
-      text.innerHTML.split(/<br\s*\/?>/i).forEach(function (l) {
-        var m = l.replace(/<[^>]+>|&nbsp;/g, ' ').trim().match(/^([SMLX]{1,3})\s+\d+\s*шт\.?\s*[—-]\s*([\d\s]+)\s*AED/i);
-        if (m) prices[m[1].toUpperCase()] = m[2].trim();
-      });
-    }
+    var data = productData() || {};
+    var editions = data.editions || [];
+    var cur = root.querySelector('.t-catalog__prod-popup__price-currency, .t-store__prod-popup__price-currency');
+    cur = cur ? cur.textContent.trim() : 'AED';
 
     // Опции: размер — в 3 строки; выбранное значение подписываем только у цвета (у кружков нет текста)
     root.querySelectorAll('.js-product-edition-option').forEach(function (opt) {
@@ -73,11 +89,9 @@
       var isSize = /размер|size/i.test(opt.dataset.editionOptionId || '');
       if (isSize) {
         opt.classList.add('dv-size');
-        opt.querySelectorAll('.t-product__option-title_buttons').forEach(function (s) {
-          var m = s.textContent.match(/^\s*([A-Z]{1,3})\s*[—-]\s*(.+)$/);
-          if (m) s.innerHTML = '<b>' + m[1] + '</b>' + m[2] + (prices[m[1]] ? '<i>' + prices[m[1]] + ' AED</i>' : '');
-        });
+        sizePrices(root, opt, editions, cur);
       }
+      if (DESIGN_OPT.test(opt.dataset.editionOptionId || '')) designImages(opt);
       if (!opt.querySelector('.t-product__option-variants_color')) return;
       var val = document.createElement('span');
       val.className = 'dv-opt-value';
@@ -102,7 +116,7 @@
       btns.insertAdjacentElement('afterend', p);
     }
 
-    buildGuide(root);
+    buildGuide(root, guideImg(root, data));
 
     // Полку допов (её рисует addons в конце колонки, позже нас) ставим после опций, перед количеством/кнопкой
     if (btns) {
@@ -115,24 +129,84 @@
     }
   }
 
-  function buildGuide(root) {
+  // Кнопки размера: буква, кол-во штук (если есть в названии варианта: «S — 25 pcs») и цена варианта из Tilda.
+  // Цена берётся с учётом остальных выбранных опций (если цена зависит, например, от цвета) и обновляется при их смене.
+  function sizePrices(root, opt, editions, cur) {
+    var key = opt.dataset.editionOptionId;
+    function price(size) {
+      var other = {};
+      root.querySelectorAll('.js-product-edition-option').forEach(function (o) {
+        var a = o.querySelector('.t-product__option-item_active input');
+        if (o !== opt && a) other[o.dataset.editionOptionId] = a.value;
+      });
+      var list = editions.filter(function (e) { return e[key] === size; });
+      var e = list.find(function (e) {
+        return Object.keys(other).every(function (k) { return e[k] === other[k]; });
+      }) || list[0];
+      return e && e.price ? e.price.replace(/[.,]00$/, '') : '';
+    }
+    function render() {
+      opt.querySelectorAll('.t-product__option-item_buttons').forEach(function (it) {
+        var input = it.querySelector('input'), t = it.querySelector('.t-product__option-title_buttons');
+        if (!input || !t) return;
+        var v = input.value, m = v.match(/^\s*(\S+)\s*[—–-]\s*(.+)$/), p = price(v);
+        t.innerHTML = '<b>' + (m ? m[1] : v) + '</b>' + (m ? m[2] : '') + (p ? '<i>' + p + ' ' + cur + '</i>' : '');
+      });
+    }
+    render();
+    root.addEventListener('change', function () { setTimeout(render, 0); });
+  }
+
+  // Картинки в кнопках «Оформления» (если их ещё не поставил скрипт option-images)
+  function designImages(opt) {
+    var used = false;
+    opt.querySelectorAll('label.t-product__option-item').forEach(function (label) {
+      if (label.querySelector('.dv-optimg')) { used = true; return; }
+      var input = label.querySelector('input'), title = label.querySelector('.t-product__option-title');
+      var url = input && DESIGN_IMAGES[input.value.trim().toLowerCase()];
+      if (!url) return;
+      var img = document.createElement('img');
+      img.className = 'dv-optimg';
+      img.src = url;
+      img.alt = input.value;
+      img.loading = 'lazy';
+      label.insertBefore(img, title || null);
+      label.setAttribute('data-dv-optimg', '1');
+      used = true;
+    });
+    if (used) opt.classList.add('dv-optimg-on');
+  }
+
+  // Картинка для плашки: из характеристики товара «Size guide»; саму характеристику на странице прячем
+  function guideImg(root, data) {
+    if (GUIDE && GUIDE.img) return GUIDE.img;
+    var c = (data.characteristics || []).find(function (x) { return GUIDE_CHARC.test(x.title || ''); });
+    var url = c && (c.value || '').trim();
+    if (!url) return '';
+    root.querySelectorAll('*').forEach(function (el) {
+      if (!el.children.length && el.textContent.indexOf(url) > -1) (el.closest('div') || el).style.display = 'none';
+    });
+    return url;
+  }
+
+  function buildGuide(root, img) {
     // сразу под кнопками размера
     var anchor = root.querySelector('.dv-size');
-    if (!GUIDE || !anchor) return;
+    if (!GUIDE || !img || !anchor) return;
     var g = document.createElement('button');
     g.type = 'button';
     g.className = 'dv-guide';
-    g.innerHTML = '<img src="' + GUIDE.img + '" alt="" loading="lazy">' +
+    g.innerHTML = '<img src="' + img + '" alt="" loading="lazy">' +
       '<span class="dv-guide__txt"><b>' + GUIDE.title + '</b>' + GUIDE.text + '</span>' +
       '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M15 15l5 5M10.5 8v5M8 10.5h5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
-    g.addEventListener('click', openZoom);
+    g.addEventListener('click', function () { openZoom(img); });
     anchor.insertAdjacentElement('afterend', g);
   }
 
-  function openZoom() {
+  function openZoom(img) {
     var z = document.createElement('div');
     z.className = 'dv-zoom';
-    z.innerHTML = '<img src="' + GUIDE.img + '" alt="' + GUIDE.title + '"><button type="button" aria-label="Закрыть">&times;</button>';
+    z.innerHTML = '<img src="' + img + '" alt="' + GUIDE.title + '"><button type="button" aria-label="Close">&times;</button>';
     var close = function () {
       z.remove();
       document.documentElement.style.overflow = '';

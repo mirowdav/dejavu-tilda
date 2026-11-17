@@ -24,23 +24,23 @@
     currency: 'AED',
     // показывать попап после добавления основного товара
     upsellPopup: false, // выключен по просьбе клиента (01.11.2026): допы и так в карточке и в корзине
-    // подсказка размера под переключателем: { 'Размер': { 'M — 51 шт.': '40 × 35 см' } }
+    // подсказка размера под переключателем: { 'Size': { 'M — 51 pcs': '40 × 35 cm' } }
     variantHints: {},
     texts: {
-      hint: 'Добавьте шары или сладости к подарку',
-      shelfTitle: 'Дополните подарок',
-      cartTitle: 'Не забудьте добавить',
-      popupTitle: 'Товар добавлен. Дополните подарок',
-      toCheckout: 'Перейти к оформлению',
-      continueShopping: 'Продолжить покупки',
-      view: 'Смотреть',
-      toCart: 'В корзину',
-      inCart: 'В корзине',
-      from: 'от',
-      soldOut: 'Нет в наличии',
-      digitsLabel: 'Цифры',
-      digitsPlaceholder: 'Например, 25',
-      quantity: 'Количество'
+      hint: 'Add balloons or sweets to your gift',
+      shelfTitle: 'Complete your gift',
+      cartTitle: 'Don’t forget to add',
+      popupTitle: 'Added to cart. Complete your gift',
+      toCheckout: 'Go to checkout',
+      continueShopping: 'Continue shopping',
+      view: 'View',
+      toCart: 'Add to cart',
+      inCart: 'In cart',
+      from: 'from',
+      soldOut: 'Sold out',
+      digitsLabel: 'Digits',
+      digitsPlaceholder: 'e.g. 25',
+      quantity: 'Quantity'
     }
   }, window.DV_ADDONS_CONFIG || {});
   CFG.texts = Object.assign({}, CFG.texts, (window.DV_ADDONS_CONFIG || {}).texts || {});
@@ -246,7 +246,7 @@
 
   function openModal(content, mod) {
     var overlay = el('<div class="dv-modal ' + (mod ? 'dv-modal_' + mod : '') + '"><div class="dv-modal__box">' +
-      '<button type="button" class="dv-modal__close" aria-label="Закрыть">×</button></div></div>');
+      '<button type="button" class="dv-modal__close" aria-label="Close">×</button></div></div>');
     overlay.querySelector('.dv-modal__box').appendChild(content);
     function close() {
       overlay.remove();
