@@ -182,17 +182,21 @@
     if (GUIDE && GUIDE.img) return GUIDE.img;
     var c = (data.characteristics || []).find(function (x) { return GUIDE_CHARC.test(x.title || ''); });
     var url = c && (c.value || '').trim();
-    if (!url) return '';
-    root.querySelectorAll('*').forEach(function (el) {
-      if (!el.children.length && el.textContent.indexOf(url) > -1) (el.closest('div') || el).style.display = 'none';
-    });
-    return url;
+    // сами характеристики на странице скрыты в CSS (.js-store-prod-charcs)
+    return /^https?:\/\//i.test(url || '') ? url : '';
   }
 
   function buildGuide(root, img) {
     // сразу под кнопками размера
     var anchor = root.querySelector('.dv-size');
     if (!GUIDE || !img || !anchor) return;
+    // блок только если по ссылке действительно картинка: битая ссылка — блока нет
+    var probe = new Image();
+    probe.onload = function () { if (!root.querySelector('.dv-guide')) insertGuide(anchor, img); };
+    probe.src = img;
+  }
+
+  function insertGuide(anchor, img) {
     var g = document.createElement('button');
     g.type = 'button';
     g.className = 'dv-guide';

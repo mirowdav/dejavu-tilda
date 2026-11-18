@@ -111,3 +111,5 @@
   /* липкая плашка с кнопкой */
   :is(.t-catalog__prod-popup__btn-wrapper,.t-store__prod-popup__btn-wrapper){position:sticky;bottom:0;z-index:5;background:#fff;margin:20px -20px 0!important;padding:12px 20px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.06)}
 }
+/* характеристики товара покупателю не показываем: там служебные поля (Size guide — ссылка на картинку сравнения) */
+.js-store-prod-charcs,.t-typography__characteristics{display:none!important}
