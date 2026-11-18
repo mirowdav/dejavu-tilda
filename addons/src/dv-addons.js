@@ -42,7 +42,7 @@
       from: 'from',
       soldOut: 'Sold out',
       digitsLabel: 'Digits',
-      digitsPlaceholder: 'e.g. 25',
+      digitsPlaceholder: 'For example: 25',
       numberLabel: 'Number',
       digitLabel: 'Digit',
       digitOf: 'of',
