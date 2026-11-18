@@ -148,3 +148,12 @@
   .dv-picker__add { margin-top: 8px; }
   .dv-upsell__actions { bottom: -16px; margin: 0 -16px -16px; padding: 12px 16px 16px; }
 }
+
+/* страница допа «шары-цифры»: поле цифр над кнопкой Tilda, количество Tilda не нужно (1 шар = 1 цифра) */
+.dv-digits-field { margin: 16px 0; font-family: var(--dv-font); }
+.dv-digits-field .dv-digits { max-width: 260px; }
+.dv-digits-field_error .dv-digits { border-color: var(--dv-brand); }
+.dv-digits-total { margin-top: 8px; font-size: 14px; color: var(--dv-muted); }
+.dv-digits-total:empty { display: none; }
+.dv-digits-field_error .dv-digits-total { color: var(--dv-brand); }
+.dv-digits-card .t-store__prod__quantity, .dv-digits-card .t-catalog__prod__quantity { display: none !important; }

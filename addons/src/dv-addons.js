@@ -47,6 +47,7 @@
       digitLabel: 'Digit',
       digitOf: 'of',
       numbersField: 'Numbers',
+      digitsRequired: 'Enter the digits',
       quantity: 'Quantity'
     }
   }, window.DV_ADDONS_CONFIG || {});
@@ -183,6 +184,7 @@
       });
       var product = {
         id: p.externalid || String(p.uid),
+        uid: String(p.uid),
         title: p.title,
         price: parseFloat(p.price) || 0,
         img: gallery[0] && gallery[0].img,
@@ -533,6 +535,13 @@
       if (!card || card.hasAttribute('data-dv-done')) return;
       card.setAttribute('data-dv-done', '1');
 
+      // карточка самого допа: полку допов не показываем, у шаров-цифр — поле ввода цифр
+      var addon = addonForCard(card);
+      if (addon) {
+        if (addon.type === 'digits') enhanceDigitsCard(card, btnWrap, addon);
+        return;
+      }
+
       var hintsEl = el('<div class="dv-variant-hint"></div>');
       var plaque = el('<a href="#" class="dv-hint">' + esc(T.hint) + ' →</a>');
       btnWrap.parentNode.insertBefore(hintsEl, btnWrap);
@@ -554,6 +563,75 @@
       card.addEventListener('click', function () { setTimeout(updateHint, 0); });
       updateHint();
     });
+  }
+
+  function addonForCard(card) {
+    var uidEl = card.hasAttribute('data-product-uid') ? card : card.querySelector('[data-product-uid]');
+    var uid = uidEl && uidEl.getAttribute('data-product-uid');
+    for (var i = 0; uid && i < DATA.products.length; i++) if (DATA.products[i].uid === uid) return DATA.products[i];
+    var skuEl = card.querySelector('.js-store-prod-sku, .js-product-sku');
+    var sku = skuEl ? skuEl.textContent.replace(/^[^:]*:\s*/, '').trim() : '';
+    return sku.indexOf(CFG.skuPrefix) === 0 ? { id: addonIdBySku(sku) } : null;
+  }
+
+  // выбор в опциях Tilda → индексы значений, как в окне допа
+  function selectionFromCard(card, product) {
+    return (product.options || []).map(function (o) {
+      var value = '';
+      card.querySelectorAll('.js-product-edition-option').forEach(function (optEl) {
+        if ((optEl.getAttribute('data-edition-option-id') || '').trim() !== o.title) return;
+        var checked = optEl.querySelector('input[type="radio"]:checked');
+        var select = optEl.querySelector('select');
+        value = checked ? checked.value : select ? select.value : '';
+      });
+      var idx = o.values.map(function (v) { return v.name; }).indexOf(value);
+      return idx < 0 ? 0 : idx;
+    });
+  }
+
+  // Страница «шары-цифры»: поле цифр над кнопкой Tilda, кнопка кладёт каждую цифру отдельной строкой
+  function enhanceDigitsCard(card, btnWrap, product) {
+    card.classList.add('dv-digits-card');
+    var field = el('<div class="dv-opt dv-digits-field"><div class="dv-opt__title">' + esc(T.digitsLabel) + '</div>' +
+      '<input class="dv-digits" inputmode="numeric" maxlength="' + (product.maxDigits || 4) + '" placeholder="' + esc(T.digitsPlaceholder) + '">' +
+      '<div class="dv-digits-total"></div></div>');
+    btnWrap.parentNode.insertBefore(field, btnWrap);
+    var input = field.querySelector('.dv-digits');
+    var total = field.querySelector('.dv-digits-total');
+
+    function update() {
+      var digits = input.value;
+      var price = itemPrice(product, selectionFromCard(card, product));
+      total.textContent = digits ? digits.length + ' × ' + formatPrice(price) + ' = ' + formatPrice(price * digits.length) : '';
+    }
+    input.addEventListener('input', function () {
+      var v = input.value.replace(/\D/g, '');
+      if (input.value !== v) input.value = v;
+      field.classList.remove('dv-digits-field_error');
+      update();
+    });
+    card.addEventListener('change', function () { setTimeout(update, 0); });
+    card.addEventListener('click', function () { setTimeout(update, 0); });
+
+    // перехват до обработчика Tilda: штатно кнопка положила бы один шар без цифр
+    btnWrap.addEventListener('click', function (e) {
+      if (!e.target.closest('a, button')) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      var digits = input.value;
+      if (!digits) {
+        field.classList.add('dv-digits-field_error');
+        total.textContent = T.digitsRequired;
+        input.focus();
+        return;
+      }
+      var sel = selectionFromCard(card, product);
+      if (stockFor(product, sel) === 0) return;
+      addToCart(product, sel, 1, digits);
+      input.value = '';
+      update();
+      if (typeof window.tcart__openCart === 'function' && !isCartOpen()) window.tcart__openCart();
+    }, true);
   }
 
   // Разметка Tilda: .js-product-edition-option[data-edition-option-id="Размер"],
