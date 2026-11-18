@@ -101,15 +101,14 @@
 
 /* Мобильная версия */
 @media (max-width:960px){
-  /* допы — лентой со свайпом, следующая карточка выглядывает */
-  :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:0 20px;scroll-padding:0 20px;scrollbar-width:none;gap:16px}
-  :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list::-webkit-scrollbar{display:none}
-  :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card{flex:0 0 38%;scroll-snap-align:start}
+  /* допы — по две карточки в ряд, вниз, в ширину колонки */
+  :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-shelf__list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 16px;margin:0;padding:0;overflow:visible}
+  :is(.t-catalog__prod-snippet__container,.t-store__prod-snippet__container) .dv-shelf_product .dv-card{min-width:0}
   :is(.t-catalog__prod-popup__col-right,.t-store__prod-popup__col-right){padding-left:20px;margin-top:20px}
   :is(.t-catalog__prod-popup__name,.t-store__prod-popup__name){font-size:26px!important}
   .dv-perks{grid-template-columns:1fr}
   /* липкая плашка с кнопкой */
-  :is(.t-catalog__prod-popup__btn-wrapper,.t-store__prod-popup__btn-wrapper){position:sticky;bottom:0;z-index:5;background:#fff;margin:20px -20px 0!important;padding:12px 20px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.06)}
+  :is(.t-catalog__prod-popup__btn-wrapper,.t-store__prod-popup__btn-wrapper){position:sticky;bottom:0;z-index:5;background:#fff;margin:0!important;padding:12px 0 calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.06)}
 }
 /* характеристики товара покупателю не показываем: там служебные поля (Size guide — ссылка на картинку сравнения) */
 .js-store-prod-charcs,.t-typography__characteristics{display:none!important}
