@@ -129,7 +129,7 @@
 .dv-chip_off { opacity: .35; text-decoration: line-through; }
 .dv-digits {
   width: 100%; height: 44px; padding: 0 14px; border: 1px solid #d4d4d4; border-radius: 0;
-  font: inherit; font-family: 'Manrope', Arial, sans-serif; font-size: 18px; color: #222222; background: #fff; box-sizing: border-box;
+  font: inherit; font-family: 'Manrope', Arial, sans-serif; font-size: 18px; color: #222222; background: #fafafa; box-sizing: border-box;
 }
 .dv-digits:focus, .dv-digits:focus-visible { outline: none; box-shadow: none; border-color: #d4d4d4; }
 .dv-digits::placeholder { color: #222222; opacity: .7; }
@@ -159,3 +159,6 @@
 .dv-digits-total:empty { display: none; }
 .dv-digits-field_error .dv-digits-total { color: var(--dv-brand); }
 .dv-digits-card .t-store__prod__quantity, .dv-digits-card .t-catalog__prod__quantity { display: none !important; }
+
+/* страница допа: артикул DOP-… покупателю не показываем */
+.dv-addon-card .t-store__prod-popup__sku, .dv-addon-card .t-catalog__prod-popup__sku { display: none !important; }

@@ -538,6 +538,7 @@
       // карточка самого допа: полку допов не показываем, у шаров-цифр — поле ввода цифр
       var addon = addonForCard(card);
       if (addon) {
+        card.classList.add('dv-addon-card'); // артикул допа покупателю не нужен (CSS)
         if (addon.type === 'digits') enhanceDigitsCard(card, btnWrap, addon);
         return;
       }
