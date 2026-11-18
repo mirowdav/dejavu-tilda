@@ -80,6 +80,9 @@
   .dv-cart_cartpage { display: none; }
 }
 
+/* шары-цифры в корзине: количество не меняется, номер удаляется целиком */
+.dv-digit-row .t706__product-plus, .dv-digit-row .t706__product-minus { visibility: hidden; pointer-events: none; }
+
 /* модалки */
 .dv-modal {
   position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center;

@@ -17,6 +17,9 @@
   var BASE_URL = currentScript ? currentScript.src.replace(/src\/[^\/]*$/, '') : '';
 
   var CFG = Object.assign({
+    // Допы — товары раздела каталога Tilda (en-сайт: раздел Add-ons). Пусто — берём файл dataUrl.
+    tildaPart: '722035005904',
+    tildaApi: 'https://store.tildaapi.com/api/getproductslist/',
     dataUrl: BASE_URL + 'data/addons.json',
     cssUrl: BASE_URL + 'src/dv-addons.css',
     // по префиксу артикула отличаем допы от основных товаров
@@ -40,6 +43,10 @@
       soldOut: 'Sold out',
       digitsLabel: 'Digits',
       digitsPlaceholder: 'e.g. 25',
+      numberLabel: 'Number',
+      digitLabel: 'Digit',
+      digitOf: 'of',
+      numbersField: 'Numbers',
       quantity: 'Quantity'
     }
   }, window.DV_ADDONS_CONFIG || {});
@@ -47,6 +54,7 @@
 
   var T = CFG.texts;
   var DATA = null;
+  var SKU_MAP = {}; // артикул допа (и его вариантов) → id допа
 
   /* ---------- утилиты ---------- */
 
@@ -86,16 +94,41 @@
     return (window.tcart && window.tcart.products) || [];
   }
 
+  // у цифр к артикулу дописана метка номера: DOP-DIGITS-GOLD#k3f9/1/2
+  function baseSku(sku) { return String(sku || '').split('#')[0]; }
+
+  function addonIdBySku(sku) {
+    var b = baseSku(sku);
+    if (!b) return null;
+    if (SKU_MAP[b]) return SKU_MAP[b];
+    return b.indexOf(CFG.skuPrefix) === 0 ? b.slice(CFG.skuPrefix.length) : null;
+  }
+
   function isAddonCartItem(p) {
-    return !!(p && p.sku && String(p.sku).indexOf(CFG.skuPrefix) === 0);
+    return !!(p && addonIdBySku(p.sku));
   }
 
   function inCartIds() {
     var ids = {};
     cartProducts().forEach(function (p) {
-      if (isAddonCartItem(p) && p.quantity > 0) ids[String(p.sku).slice(CFG.skuPrefix.length)] = true;
+      var id = p && p.quantity > 0 && addonIdBySku(p.sku);
+      if (id) ids[id] = true;
     });
     return ids;
+  }
+
+  function buildSkuMap() {
+    SKU_MAP = {};
+    DATA.products.forEach(function (pr) {
+      SKU_MAP[CFG.skuPrefix + pr.id] = pr.id;
+      if (pr.sku) SKU_MAP[pr.sku] = pr.id;
+      (pr.editions || []).forEach(function (e) { if (e.sku) SKU_MAP[e.sku] = pr.id; });
+    });
+  }
+
+  function cartSku(product, sel) {
+    var e = editionFor(product, sel);
+    return (e && e.sku) || product.sku || CFG.skuPrefix + product.id;
   }
 
   function isCartOpen() {
@@ -103,7 +136,93 @@
     return b.contains('t706__body_cartsidebarshowed') || b.contains('t706__body_cartpageshowed') || b.contains('t706__body_cartwinshowed');
   }
 
+  /* ---------- данные из каталога Tilda ---------- */
+
+  // API блока каталога Tilda; отвечает {redirectto: 'one'}, если проект живёт на другом домене API
+  function fetchTildaPart(part) {
+    function get(api) {
+      return fetch(api + '?storepartuid=' + encodeURIComponent(part) + '&getoptions=true&slice=1&size=500')
+        .then(function (r) { return r.json(); });
+    }
+    return get(CFG.tildaApi).then(function (d) {
+      return d && d.redirectto ? get(CFG.tildaApi.replace(/tildaapi\.[a-z]+/, 'tildaapi.' + d.redirectto)) : d;
+    });
+  }
+
+  function parseJson(s, def) {
+    if (s && typeof s === 'object') return s;
+    try { return s ? JSON.parse(s) : def; } catch (e) { return def; }
+  }
+
+  function qtyOf(q) { return q === '' || q == null ? null : +q; }
+
+  // пока в Tilda у опции цвета не заданы цвета — красим кружки по названию
+  var NAMED_COLORS = {
+    red: '#c8102e', pink: '#f4a6c0', white: '#ffffff', gold: '#d4af37', silver: '#c0c0c0',
+    'rose gold': '#e8b4a0', 'light blue': '#8ecae6', blue: '#8ecae6', black: '#111111', green: '#7a9e7e'
+  };
+
+  // Товар Tilda → модель допа. Цена, остаток, артикул и фото — у варианта (edition);
+  // характеристики Type: digits / Max digits — шары-цифры с полем ввода.
+  function fromTilda(resp) {
+    var colors = {};
+    (resp.options || []).forEach(function (o) {
+      (o.values || []).forEach(function (v) { if (v.color) colors[o.title + '|' + v.value] = v.color; });
+    });
+    var products = (resp.products || []).map(function (p) {
+      var charcs = {};
+      (p.characteristics || []).forEach(function (c) { charcs[String(c.title).trim().toLowerCase()] = String(c.value).trim(); });
+      var gallery = parseJson(p.gallery, []);
+      var opts = parseJson(p.json_options, []).map(function (o) {
+        var isColor = !!(o.params && o.params.hasColor);
+        return {
+          title: o.title,
+          type: isColor ? 'color' : undefined,
+          values: (o.values || []).map(function (v) { return { name: v, color: isColor ? colors[o.title + '|' + v] || NAMED_COLORS[String(v).toLowerCase()] || null : undefined }; })
+        };
+      });
+      var product = {
+        id: p.externalid || String(p.uid),
+        title: p.title,
+        price: parseFloat(p.price) || 0,
+        img: gallery[0] && gallery[0].img,
+        sku: p.sku || '',
+        options: opts,
+        stock: opts.length ? undefined : qtyOf(p.quantity)
+      };
+      if (opts.length) {
+        product.editions = (p.editions || []).map(function (e) {
+          var vals = {};
+          opts.forEach(function (o) { vals[o.title] = e[o.title]; });
+          return { vals: vals, price: parseFloat(e.price) || 0, qty: qtyOf(e.quantity), sku: e.sku || '', img: e.img || '' };
+        });
+      }
+      if (charcs.type === 'digits') {
+        product.type = 'digits';
+        product.maxDigits = parseInt(charcs['max digits'], 10) || 4;
+      }
+      return product;
+    });
+    return { groups: [], products: products };
+  }
+
+  function loadData() {
+    if (CFG.tildaPart) return fetchTildaPart(CFG.tildaPart).then(fromTilda);
+    return fetch(CFG.dataUrl, { cache: 'no-cache' }).then(function (r) { return r.json(); });
+  }
+
   /* ---------- модель товара-допа ---------- */
+
+  // вариант Tilda для выбранных значений (null — такой комбинации нет)
+  function editionFor(product, sel) {
+    if (!product.editions) return null;
+    var opts = product.options || [];
+    for (var i = 0; i < product.editions.length; i++) {
+      var e = product.editions[i];
+      if (opts.every(function (o, k) { return e.vals[o.title] === o.values[sel[k]].name; })) return e;
+    }
+    return null;
+  }
 
   function defaultSelection(product) {
     var sel = (product.options || []).map(function () { return 0; });
@@ -123,25 +242,41 @@
 
   // null = остаток не ведётся
   function stockFor(product, sel) {
+    if (product.editions) {
+      var e = editionFor(product, sel);
+      return e ? e.qty : 0;
+    }
     if (product.stock == null) return null;
     if (typeof product.stock === 'number') return product.stock;
     var key = variantKey(product, sel);
     return Object.prototype.hasOwnProperty.call(product.stock, key) ? product.stock[key] : null;
   }
 
-  function unitPrice(product, sel, digits) {
+  // цена одной штуки (у шаров-цифр — одной цифры)
+  function itemPrice(product, sel) {
+    if (product.editions) {
+      var e = editionFor(product, sel);
+      return e ? e.price : product.price || 0;
+    }
     var price = product.price || 0;
     (product.options || []).forEach(function (o, i) {
       var v = o.values[sel[i]];
       if (v.price != null) price = v.price;
       if (v.add != null) price += v.add;
     });
+    return price;
+  }
+
+  function unitPrice(product, sel, digits) {
+    var price = itemPrice(product, sel);
     if (product.type === 'digits') price *= Math.max(1, (digits || '').length);
     return price;
   }
 
   function productImg(product, sel) {
     var img = product.img, color = null;
+    var ed = sel && editionFor(product, sel);
+    if (ed && ed.img) img = ed.img;
     (product.options || []).forEach(function (o, i) {
       var v = o.values[sel ? sel[i] : 0];
       if (v.img) img = v.img;
@@ -153,6 +288,9 @@
   }
 
   function minPrice(product) {
+    if (product.editions && product.editions.length) {
+      return Math.min.apply(null, product.editions.map(function (e) { return e.price; }));
+    }
     var prices = [product.price || 0];
     (product.options || []).forEach(function (o) {
       o.values.forEach(function (v) { if (v.price != null) prices.push(v.price); });
@@ -168,20 +306,40 @@
     var options = (product.options || []).map(function (o, i) {
       return { option: o.title, variant: o.values[sel[i]].name };
     });
-    if (product.type === 'digits') options.unshift({ option: T.digitsLabel, variant: digits });
-
-    var item = {
-      name: product.title,
-      price: unitPrice(product, sel, digits),
-      quantity: qty,
-      img: productImg(product, sel),
-      sku: CFG.skuPrefix + product.id
-    };
-    if (options.length) item.options = options;
     var stock = stockFor(product, sel);
-    if (stock != null) item.inv = stock;
+    var items;
 
-    window.tcart__addProduct(item);
+    if (product.type === 'digits') {
+      // каждая цифра — отдельная строка; строки одного номера связаны меткой в артикуле,
+      // в опциях — весь номер и позиция цифры (иначе Tilda склеит одинаковые цифры, как в «11»)
+      var group = Math.random().toString(36).slice(2, 7);
+      items = digits.split('').map(function (d, i) {
+        return {
+          name: product.title + ' «' + d + '»',
+          price: itemPrice(product, sel),
+          quantity: 1,
+          img: productImg(product, sel),
+          sku: cartSku(product, sel) + '#' + group + '/' + (i + 1) + '/' + digits.length,
+          options: [
+            { option: T.numberLabel, variant: digits },
+            { option: T.digitLabel, variant: (i + 1) + ' ' + T.digitOf + ' ' + digits.length }
+          ].concat(options)
+        };
+      });
+    } else {
+      var item = {
+        name: product.title,
+        price: unitPrice(product, sel, digits),
+        quantity: qty,
+        img: productImg(product, sel),
+        sku: cartSku(product, sel)
+      };
+      if (options.length) item.options = options;
+      if (stock != null) item.inv = stock;
+      items = [item];
+    }
+
+    items.forEach(function (it) { window.tcart__addProduct(it); });
     // tcart__addProduct сам не перерисовывает открытую корзину
     if (isCartOpen()) {
       if (typeof window.tcart__reDrawProducts === 'function') window.tcart__reDrawProducts();
@@ -316,6 +474,7 @@
       var stock = stockFor(product, sel);
       if (stock != null && qty > stock) qty = Math.max(1, stock);
       box.querySelector('.dv-qty__val').textContent = qty;
+      box.querySelector('.dv-qty').style.display = product.type === 'digits' ? 'none' : '';
       box.querySelector('.dv-picker__img').style.backgroundImage = "url('" + productImg(product, sel) + "')";
       box.querySelector('.dv-picker__price').textContent = formatPrice(unitPrice(product, sel, digits) * qty);
       box.querySelector('.dv-picker__stock').textContent = stock === 0 ? T.soldOut : '';
@@ -423,9 +582,113 @@
       block.appendChild(renderShelf(T.cartTitle, 'cart'));
       list.parentNode.insertBefore(block, list.nextSibling);
     });
+    if (fixDigitGroups()) return saveCart(); // перерисовка снова вызовет enhanceCart
+    markDigitRows();
+    syncNumbersField();
     hideAddonSku();
     refreshMarks();
   }
+
+  /* ---------- шары-цифры в корзине ---------- */
+
+  function digitGroup(p) {
+    var m = p && String(p.sku || '').match(/#([a-z0-9]+)\/(\d+)\/(\d+)$/);
+    return m ? { id: m[1], pos: +m[2], total: +m[3] } : null;
+  }
+
+  function saveCart() {
+    if (typeof window.tcart__updateTotalProductsinCartObj === 'function') window.tcart__updateTotalProductsinCartObj();
+    if (typeof window.tcart__saveLocalObj === 'function') window.tcart__saveLocalObj();
+    if (typeof window.tcart__reDrawCartIcon === 'function') window.tcart__reDrawCartIcon();
+    if (typeof window.tcart__reDrawProducts === 'function') window.tcart__reDrawProducts();
+    if (typeof window.tcart__reDrawTotal === 'function') window.tcart__reDrawTotal();
+  }
+
+  // удаляем все цифры номера разом (половина номера никому не нужна)
+  function removeDigitGroup(id) {
+    window.tcart.products = cartProducts().filter(function (p) {
+      var g = digitGroup(p);
+      return !(g && g.id === id);
+    });
+    saveCart();
+  }
+
+  // номер всегда целый и по одной штуке каждой цифры
+  function fixDigitGroups() {
+    var groups = {}, changed = false;
+    cartProducts().forEach(function (p) {
+      var g = digitGroup(p);
+      if (!g) return;
+      (groups[g.id] = groups[g.id] || { total: g.total, items: [] }).items.push(p);
+    });
+    Object.keys(groups).forEach(function (id) {
+      var g = groups[id];
+      var alive = g.items.filter(function (p) { return p.quantity > 0; });
+      if (alive.length && alive.length < g.total) {
+        window.tcart.products = cartProducts().filter(function (p) { return g.items.indexOf(p) === -1; });
+        changed = true;
+        return;
+      }
+      alive.forEach(function (p) {
+        if (+p.quantity !== 1) {
+          p.quantity = 1;
+          p.amount = p.price;
+          changed = true;
+        }
+      });
+    });
+    return changed;
+  }
+
+  // скрытое поле в форме заказа: все номера целиком, например «25 (Gold); 30 (Silver)»
+  function numbersSummary() {
+    var seen = {}, out = [];
+    cartProducts().forEach(function (p) {
+      var g = digitGroup(p);
+      if (!g || seen[g.id] || !(p.quantity > 0)) return;
+      seen[g.id] = true;
+      var opts = p.options || [];
+      var num = (opts[0] || {}).variant || '';
+      var rest = opts.slice(2).map(function (o) { return o.variant; }).join(', ');
+      out.push(num + (rest ? ' (' + rest + ')' : ''));
+    });
+    return out.join('; ');
+  }
+
+  function syncNumbersField() {
+    var value = numbersSummary();
+    document.querySelectorAll('.t706 form').forEach(function (form) {
+      var input = form.querySelector('input[data-dv-numbers]');
+      if (!input) {
+        if (!value) return;
+        input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = T.numbersField;
+        input.setAttribute('data-dv-numbers', '');
+        form.appendChild(input);
+      }
+      input.value = value;
+    });
+  }
+
+  // строки цифр: без «+/−», крестик удаляет весь номер
+  function markDigitRows() {
+    var products = cartProducts();
+    document.querySelectorAll('.t706__product[data-cart-product-i]').forEach(function (row) {
+      row.classList.toggle('dv-digit-row', !!digitGroup(products[+row.getAttribute('data-cart-product-i')]));
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var del = e.target.closest && e.target.closest('.t706__product-del');
+    if (!del) return;
+    var row = del.closest('.t706__product[data-cart-product-i]');
+    var g = row && digitGroup(cartProducts()[+row.getAttribute('data-cart-product-i')]);
+    if (!g) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    removeDigitGroup(g.id);
+  }, true);
 
   // Tilda печатает артикул под названием — для допов он служебный
   function hideAddonSku() {
@@ -482,6 +745,7 @@
 
   function start(data) {
     DATA = data;
+    buildSkuMap();
     hookCart();
     enhanceProductCards();
     enhanceCart();
@@ -492,8 +756,7 @@
   }
 
   loadCss();
-  fetch(CFG.dataUrl, { cache: 'no-cache' })
-    .then(function (r) { return r.json(); })
+  loadData()
     .then(function (data) {
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { start(data); });
       else start(data);
