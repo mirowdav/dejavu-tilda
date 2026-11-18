@@ -196,7 +196,7 @@
         product.editions = (p.editions || []).map(function (e) {
           var vals = {};
           opts.forEach(function (o) { vals[o.title] = e[o.title]; });
-          return { vals: vals, price: parseFloat(e.price) || 0, qty: qtyOf(e.quantity), sku: e.sku || '', img: e.img || '' };
+          return { uid: String(e.uid), vals: vals, price: parseFloat(e.price) || 0, qty: qtyOf(e.quantity), sku: e.sku || '', img: e.img || '' };
         });
       }
       if (charcs.type === 'digits') {
@@ -566,12 +566,17 @@
   }
 
   function addonForCard(card) {
-    var uidEl = card.hasAttribute('data-product-uid') ? card : card.querySelector('[data-product-uid]');
-    var uid = uidEl && uidEl.getAttribute('data-product-uid');
-    for (var i = 0; uid && i < DATA.products.length; i++) if (DATA.products[i].uid === uid) return DATA.products[i];
+    // data-product-lid — товар; data-product-uid Tilda подменяет на uid выбранного варианта
+    var uids = ['data-product-lid', 'data-product-uid'].map(function (a) { return card.getAttribute(a); }).filter(Boolean);
+    for (var i = 0; i < DATA.products.length; i++) {
+      var pr = DATA.products[i];
+      var own = [pr.uid].concat((pr.editions || []).map(function (e) { return e.uid; }));
+      if (uids.some(function (u) { return own.indexOf(u) > -1; })) return pr;
+    }
     var skuEl = card.querySelector('.js-store-prod-sku, .js-product-sku');
     var sku = skuEl ? skuEl.textContent.replace(/^[^:]*:\s*/, '').trim() : '';
-    return sku.indexOf(CFG.skuPrefix) === 0 ? { id: addonIdBySku(sku) } : null;
+    if (sku.indexOf(CFG.skuPrefix) !== 0) return null;
+    return findProduct(addonIdBySku(sku)) || { id: sku };
   }
 
   // выбор в опциях Tilda → индексы значений, как в окне допа
