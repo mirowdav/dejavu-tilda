@@ -44,6 +44,30 @@ window.DV_SIZE_GUIDE = false; // или { title, text, img: 'https://...' }
 </script>
 ```
 
+## Боевой загрузчик (для всех посетителей)
+
+Ставится вместо тестового в то же место. Работает у всех; `?dvui=0` в адресе выключает скрипт — для сравнения с исходным сайтом.
+
+```html
+<script>
+(function () {
+  // ?dvui=0 в адресе — сайт без скрипта (для сравнения)
+  if (/[?&]dvui=0(&|$)/.test(location.search)) return;
+  // последний тег репозитория: при релизе ссылку в Tilda не меняем
+  var repo = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@';
+  function load(v) {
+    var s = document.createElement('script');
+    s.src = repo + v + '/product-ui/dv-product-ui.js';
+    (document.body || document.head).appendChild(s);
+  }
+  fetch('https://data.jsdelivr.com/v1/packages/gh/mirowdav/dejavu-tilda/resolved?specifier=latest')
+    .then(function (r) { return r.json(); })
+    .then(function (d) { load(d.version); })
+    .catch(function () { load('0.1.41'); });
+})();
+</script>
+```
+
 Скрипт при старте сверяет свою версию с последним тегом на GitHub (виден сразу после пуша; при ошибке — API jsDelivr) и, если отстал, грузит вместо себя актуальную; не загрузилась — стартует сам. Поэтому после релиза новая версия на сайте сразу, задержка jsDelivr не важна. Загрузчик берёт последний тег репозитория через API jsDelivr (на практике новый тег доходит до сайта за ~5–7 минут после пуша), поэтому релиз = новый тег, Tilda не трогаем. Ссылка на тег у jsDelivr не устаревает, в отличие от `@main` (тот кэшируется до 12 часов, сброс расходится по серверам минутами, браузер держит файл до 7 дней). Теги общие на весь репозиторий: «последний» — самый старший по номеру. Сразу после пуша тега файлы с CDN не запрашивать — jsDelivr может закэшировать 404; лечится purge по тегу.
 
 Локальная проверка: `before.html` / `after.html` (копии страницы, в git не входят).

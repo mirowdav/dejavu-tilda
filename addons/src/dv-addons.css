@@ -177,3 +177,7 @@
 
 /* страница допа: артикул DOP-… покупателю не показываем */
 .dv-addon-card .t-store__prod-popup__sku, .dv-addon-card .t-catalog__prod-popup__sku { display: none !important; }
+
+/* раздел Add-ons (id 722035005904, как CFG.tildaPart) не показываем в меню разделов каталога: допы продаются через полку */
+.t-store__parts-item:has(> [data-storepart-link*="722035005904"]),
+[data-storepart-link*="722035005904"] { display: none !important; }
