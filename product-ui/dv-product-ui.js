@@ -5,7 +5,6 @@
     ['Photo of your bouquet before dispatch', '<rect x="3" y="6" width="18" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 6l1.2-2h4.6l1.2 2" fill="none" stroke="currentColor" stroke-width="1.5"/>'],
     ['Free greeting card', '<rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 6.5L12 13l8.5-6.5" fill="none" stroke="currentColor" stroke-width="1.5"/>']
   ];
-  var CATALOG_TITLE = 'Catalog';
 
   var self = document.currentScript || document.querySelector('script[src*="dv-product-ui.js"]');
   var IMG = self && self.src ? self.src.replace(/dv-product-ui\.js(\?.*)?$/, 'img/') : '';
@@ -66,17 +65,8 @@
     if (!root || root.dataset.dvUi || !root.querySelector('.js-product-edition-option')) return;
     root.dataset.dvUi = '1';
 
-    // Крошки над названием; ссылка — из штатной кнопки «назад» блока
-    var tw = root.querySelector('.t-catalog__prod-popup__title-wrapper, .t-store__prod-popup__title-wrapper');
     var name = root.querySelector('.js-product-name');
-    var back = box.querySelector('.js-catalog-close-text, .js-store-close-text');
-    if (tw && name) {
-      var c = document.createElement('div');
-      c.className = 'dv-crumbs';
-      c.innerHTML = '<a href="' + (back ? back.getAttribute('href') : '/catalog') + '">' + CATALOG_TITLE + '</a> &nbsp;/&nbsp; ' + name.textContent.replace(/\s*\(\s*\)\s*$/, '');
-      tw.insertBefore(c, tw.firstChild);
-      name.textContent = name.textContent.replace(/\s*\(\s*\)\s*$/, '');
-    }
+    if (name) name.textContent = name.textContent.replace(/\s*\(\s*\)\s*$/, '');
 
     var data = productData() || {};
     var editions = data.editions || [];
