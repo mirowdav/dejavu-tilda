@@ -75,6 +75,7 @@
 /* в корзине карточки допов без рамки, с воздухом между ними */
 .dv-cart .dv-shelf__list { gap: 20px; }
 .dv-cart .dv-card { padding: 0; border: 0; gap: 8px; }
+.dv-cart .dv-card__img { border-radius: 0; }
 /* десктоп (порог Tilda — 960px): допы предлагаем в боковой корзине, на странице с формой не повторяем */
 @media (min-width: 961px) {
   .dv-cart_cartpage { display: none; }
@@ -136,8 +137,8 @@
 }
 .dv-chip_off { opacity: .35; text-decoration: line-through; }
 .dv-digits {
-  width: 100%; height: 44px; padding: 0 14px; border: 1px solid #d4d4d4; border-radius: 0;
-  font: inherit; font-family: 'Manrope', Arial, sans-serif; font-size: 18px; color: #222222; background: #fff; box-sizing: border-box;
+  width: 100%; height: 56px; padding: 0 14px; border: 1px solid #d4d4d4; border-radius: 0;
+  font: inherit; font-family: 'Manrope', Arial, sans-serif; font-size: 16px; color: #222222; background: #fff; box-sizing: border-box;
 }
 .dv-digits:focus, .dv-digits:focus-visible { outline: none; box-shadow: none; border-color: #d4d4d4; }
 .dv-digits::placeholder { color: #222222; opacity: .7; }
