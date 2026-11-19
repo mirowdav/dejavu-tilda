@@ -152,8 +152,14 @@
 .dv-picker__add { width: 100%; min-height: 50px; }
 
 @media (max-width: 560px) {
-  .dv-modal { align-items: flex-end; padding: 0; }
-  .dv-modal__box, .dv-modal_picker .dv-modal__box { max-height: 92vh; border-radius: 0; padding: 24px 16px 16px; }
+  /* окно по центру экрана с отступами по краям */
+  .dv-modal { align-items: center; padding: 16px; }
+  .dv-modal__box, .dv-modal_picker .dv-modal__box { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); border-radius: 0; padding: 16px; }
+  /* крестик сверху справа, не уезжает при прокрутке окна */
+  .dv-modal__close {
+    position: sticky; top: 0; right: auto; z-index: 3; display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; margin: -8px -8px -28px auto; background: var(--dv-bg); font-size: 28px; color: var(--dv-text);
+  }
   .dv-picker { grid-template-columns: 1fr; gap: 20px; }
   .dv-picker__img { max-width: 300px; width: 100%; margin: 0 auto; }
   .dv-picker__add { margin-top: 8px; }
