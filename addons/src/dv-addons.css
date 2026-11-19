@@ -163,14 +163,13 @@
   .dv-picker { grid-template-columns: 1fr; gap: 20px; }
   .dv-picker__img { max-width: 300px; width: 100%; margin: 0 auto; }
   .dv-picker__add { margin-top: 8px; }
-  /* окно допа: фото во всю ширину окна без отступов, белый крестик поверх фото */
-  .dv-modal_picker .dv-modal__box { padding: 0; }
+  /* окно допа: фото на всю ширину внутри тех же отступов 16px, белый крестик поверх фото */
   .dv-modal_picker .dv-picker__img { max-width: none; margin: 0; }
-  .dv-modal_picker .dv-picker__body { padding: 0 16px 16px; }
   .dv-modal_picker .dv-picker__title { padding-right: 0; font-size: 22px; line-height: 1.25; }
   .dv-modal_picker .dv-modal__close {
-    margin: 8px 8px -44px auto; background: rgba(0, 0, 0, .3); border-radius: 50%;
-    color: #fff; font-size: 28px; text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    margin: 8px 8px -44px auto; padding: 0 0 4px 2px; /* сам крестик: на 2px выше и на 1px правее центра */
+    background: rgba(0, 0, 0, .3); border-radius: 50%;
+    color: #fff; font-size: 28px; line-height: 1; text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
   }
   .dv-upsell__actions { bottom: -16px; margin: 0 -16px -16px; padding: 12px 16px 16px; }
 }
