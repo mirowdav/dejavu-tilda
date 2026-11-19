@@ -25,9 +25,14 @@
       (document.body || document.head).appendChild(a);
     }
 
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
-    // карточка дорисовывается Tilda асинхронно
-    var tries = 0, t = setInterval(function () { run(); if (++tries > 20) clearInterval(t); }, 300);
+    // только после разбора страницы: данные товара (var product) Tilda кладёт ниже разметки,
+    // а скрипт может стоять в HEAD
+    function start() {
+      run();
+      // карточка дорисовывается Tilda асинхронно
+      var tries = 0, t = setInterval(function () { run(); if (++tries > 20) clearInterval(t); }, 300);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
 
   // Плашка «Как выглядят размеры» с фото на весь экран. Фото — из характеристики товара «Size guide» (ссылка на картинку);
@@ -53,9 +58,14 @@
 
   // Данные товара (варианты с ценами, характеристики) Tilda кладёт в код страницы товара: var product = {...};
   function productData() {
-    var s = [].find.call(document.scripts, function (x) { return x.textContent.indexOf('var product = {') > -1; });
-    var m = s && s.textContent.match(/var product = (\{[\s\S]*?\});\s*\n/);
-    try { return m ? JSON.parse(m[1]) : null; } catch (e) { return null; }
+    // ищем скрипт, где строка — настоящие данные (во встроенной версии она есть и в нашем собственном коде)
+    var scripts = document.scripts;
+    for (var i = 0; i < scripts.length; i++) {
+      var m = scripts[i].textContent.match(/var product = (\{[\s\S]*?\});\s*\n/);
+      if (!m) continue;
+      try { return JSON.parse(m[1]); } catch (e) { /* не JSON — ищем дальше */ }
+    }
+    return null;
   }
 
   // Два вида блока Tilda: новый каталог (t-catalog__) и старый магазин (t-store__), разметка одинаковая.
@@ -215,51 +225,7 @@
 
   function run() { document.querySelectorAll('.t-catalog__prod-snippet__container, .t-store__prod-snippet__container').forEach(init); }
 
-  // Загрузчик в Tilda берёт номер последнего тега из API jsDelivr, а тот узнаёт о новом теге минут через 5–7,
-  // да ещё браузер держит его ответ в кэше. Поэтому сверяемся сами: сначала с тегами GitHub (видны сразу после
-  // пуша, кэш 60 с), при ошибке — с jsDelivr. Если мы старее — подгружаем вместо себя актуальную (она уже
-  // не проверяет); не загрузилась — стартуем сами. Локально (не с jsDelivr) сразу стартуем.
-  var own = self && self.src && (self.src.match(/dejavu-tilda@v?(\d+\.\d+\.\d+)\//) || [])[1];
-  function newer(a, b) {
-    a = a.split('.'); b = b.split('.');
-    for (var i = 0; i < 3; i++) if (+a[i] !== +b[i]) return +a[i] > +b[i];
-    return false;
-  }
-  function json(url) {
-    return fetch(url, { cache: 'no-cache' }).then(function (r) {
-      if (!r.ok) throw new Error(r.status);
-      return r.json();
-    });
-  }
-  function latest() {
-    return json('https://api.github.com/repos/mirowdav/dejavu-tilda/tags?per_page=100')
-      .then(function (tags) {
-        var best = null;
-        tags.forEach(function (t) {
-          var v = (t.name.match(/^v?(\d+\.\d+\.\d+)$/) || [])[1];
-          if (v && (!best || newer(v, best))) best = v;
-        });
-        if (!best) throw new Error('no tags');
-        return best;
-      })
-      .catch(function () {
-        return json('https://data.jsdelivr.com/v1/packages/gh/mirowdav/dejavu-tilda/resolved?specifier=latest')
-          .then(function (d) { return d.version; });
-      });
-  }
-  if (own && !window.__dvUiChecked) {
-    window.__dvUiChecked = true;
-    latest()
-      .then(function (v) {
-        if (!v || !newer(v, own)) return boot();
-        var s = document.createElement('script');
-        s.src = self.src.replace(/@v?\d+\.\d+\.\d+\//, '@' + v + '/');
-        s.onerror = boot;
-        (document.body || document.head).appendChild(s);
-      })
-      .catch(boot);
-  } else {
-    window.__dvUiChecked = true;
-    boot();
-  }
+  // Подключается в Tilda прямой ссылкой на конкретный тег (…/dejavu-tilda@0.1.42/product-ui/dv-product-ui.js):
+  // без загрузчика и сверки версий. Новая версия на сайте = новый тег + смена номера в ссылке в Tilda.
+  boot();
 })();

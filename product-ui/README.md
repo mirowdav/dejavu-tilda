@@ -20,54 +20,16 @@ CSS подтягивается скриптом сам, из той же пап�
 window.DV_SIZE_GUIDE = false; // или { title, text, img: 'https://...' }
 ```
 
-## Тест на боевом сайте
+## Подключение на сайте
 
-«Настройки сайта → Вставка кода → перед `</body>`» (стоит на сайте с 30.10.2026, больше не трогаем). Работает только на странице с `?dvui=1` в адресе, без запоминания. Всё остальное меняется в `dv-product-ui.js` и выкатывается новым тегом.
-
-```html
-<script>
-(function () {
-  // только когда в адресе есть ?dvui=1, без запоминания
-  if (!/[?&]dvui=1(&|$)/.test(location.search)) return;
-  // последний тег репозитория: при релизе ссылку в Tilda не меняем
-  var repo = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@';
-  function load(v) {
-    var s = document.createElement('script');
-    s.src = repo + v + '/product-ui/dv-product-ui.js';
-    (document.body || document.head).appendChild(s);
-  }
-  fetch('https://data.jsdelivr.com/v1/packages/gh/mirowdav/dejavu-tilda/resolved?specifier=latest')
-    .then(function (r) { return r.json(); })
-    .then(function (d) { load(d.version); })
-    .catch(function () { load('v0.1.9'); });
-})();
-</script>
-```
-
-## Боевой загрузчик (для всех посетителей)
-
-Ставится вместо тестового в то же место. Работает у всех; `?dvui=0` в адресе выключает скрипт — для сравнения с исходным сайтом.
+С 19.11.2026 — прямая ссылка на конкретный тег в «Настройки сайта → Вставка кода → перед `</body>`», без загрузчика и сверки версий:
 
 ```html
-<script>
-(function () {
-  // ?dvui=0 в адресе — сайт без скрипта (для сравнения)
-  if (/[?&]dvui=0(&|$)/.test(location.search)) return;
-  // последний тег репозитория: при релизе ссылку в Tilda не меняем
-  var repo = 'https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@';
-  function load(v) {
-    var s = document.createElement('script');
-    s.src = repo + v + '/product-ui/dv-product-ui.js';
-    (document.body || document.head).appendChild(s);
-  }
-  fetch('https://data.jsdelivr.com/v1/packages/gh/mirowdav/dejavu-tilda/resolved?specifier=latest')
-    .then(function (r) { return r.json(); })
-    .then(function (d) { load(d.version); })
-    .catch(function () { load('0.1.41'); });
-})();
-</script>
+<script src="https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@0.1.42/product-ui/dv-product-ui.js"></script>
 ```
 
-Скрипт при старте сверяет свою версию с последним тегом на GitHub (виден сразу после пуша; при ошибке — API jsDelivr) и, если отстал, грузит вместо себя актуальную; не загрузилась — стартует сам. Поэтому после релиза новая версия на сайте сразу, задержка jsDelivr не важна. Загрузчик берёт последний тег репозитория через API jsDelivr (на практике новый тег доходит до сайта за ~5–7 минут после пуша), поэтому релиз = новый тег, Tilda не трогаем. Ссылка на тег у jsDelivr не устаревает, в отличие от `@main` (тот кэшируется до 12 часов, сброс расходится по серверам минутами, браузер держит файл до 7 дней). Теги общие на весь репозиторий: «последний» — самый старший по номеру. Сразу после пуша тега файлы с CDN не запрашивать — jsDelivr может закэшировать 404; лечится purge по тегу.
+Скрипт сам подключает свой CSS и модуль addons из того же тега. Новая версия на сайте = новый тег + смена номера в этой ссылке. Сразу после пуша тега файлы с CDN не запрашивать — jsDelivr может закэшировать 404; лечится purge по тегу.
+
+Встроить весь код в Tilda не получилось: поле HEAD обрезается (~55 КБ вместе с gallery-filter), незакрытый `<script>` даёт белый экран.
 
 Локальная проверка: `before.html` / `after.html` (копии страницы, в git не входят).
