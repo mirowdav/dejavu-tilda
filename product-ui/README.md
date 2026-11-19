@@ -25,7 +25,7 @@ window.DV_SIZE_GUIDE = false; // или { title, text, img: 'https://...' }
 С 19.11.2026 — прямая ссылка на конкретный тег в «Настройки сайта → Вставка кода → перед `</body>`», без загрузчика и сверки версий:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@0.1.44/product-ui/dv-product-ui.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/mirowdav/dejavu-tilda@0.1.45/product-ui/dv-product-ui.js"></script>
 ```
 
 Скрипт сам подключает свой CSS и модуль addons из того же тега. Новая версия на сайте = новый тег + смена номера в этой ссылке. Сразу после пуша тега файлы с CDN не запрашивать — jsDelivr может закэшировать 404; лечится purge по тегу.
