@@ -105,8 +105,10 @@
       sync();
     });
 
+    designFirst(root, editions);
+
     // Преимущества под кнопкой
-    var btns = root.querySelector('.t-catalog__prod-popup__btn-wrapper, .t-store__prod-popup__btn-wrapper');
+    var btns =root.querySelector('.t-catalog__prod-popup__btn-wrapper, .t-store__prod-popup__btn-wrapper');
     if (btns) {
       var p = document.createElement('div');
       p.className = 'dv-perks';
@@ -155,6 +157,91 @@
     }
     render();
     root.addEventListener('change', function () { setTimeout(render, 0); });
+  }
+
+  // Оформление (box / bouquet / basket) — главная опция: всегда кликабельна, а у размера, цвета и т. п.
+  // показываются только значения, которые есть в выбранном оформлении. Если текущего размера в новом
+  // оформлении нет — сначала переключаем на ближайший доступный, потом выбираем оформление.
+  var DESIGN_VALUES = /^(bouquet|box|basket|букет|коробка|корзина)$/i;
+  function isDesignOpt(opt) {
+    if (DESIGN_OPT.test(opt.dataset.editionOptionId || '')) return true;
+    var inputs = opt.querySelectorAll('input[type="radio"]');
+    return inputs.length > 0 && [].every.call(inputs, function (i) { return DESIGN_VALUES.test(i.value.trim()); });
+  }
+
+  function designFirst(root, editions) {
+    var opts = [].slice.call(root.querySelectorAll('.js-product-edition-option'));
+    var design = opts.filter(isDesignOpt)[0];
+    if (!design || !editions.length) return;
+    design.classList.add('dv-design');
+    var dKey = design.dataset.editionOptionId;
+    var others = opts.filter(function (o) { return o !== design; });
+    var busy = false;
+
+    function labels(opt) { return [].slice.call(opt.querySelectorAll('label.t-product__option-item')); }
+    function labelOf(opt, v) { return labels(opt).filter(function (l) { var i = l.querySelector('input'); return i && i.value === v; })[0]; }
+    function current(opt) {
+      var a = opt.querySelector('.t-product__option-item_active input') || opt.querySelector('input:checked');
+      return a ? a.value : null;
+    }
+    // варианты товара с этим оформлением
+    function withDesign(d) { return editions.filter(function (e) { return e[dKey] === d; }); }
+
+    function filter() {
+      var list = withDesign(current(design));
+      others.forEach(function (o) {
+        var k = o.dataset.editionOptionId;
+        labels(o).forEach(function (l) {
+          var i = l.querySelector('input');
+          var ok = !i || list.some(function (e) { return e[k] === i.value; });
+          l.classList.toggle('dv-opt-hidden', !ok);
+        });
+      });
+    }
+
+    // лучший вариант в новом оформлении: совпадает с текущим выбором по максимуму опций,
+    // при равенстве — ближайший по порядку кнопок размер
+    function pick(d) {
+      var size = others.filter(function (o) { return o.classList.contains('dv-size'); })[0];
+      var sizeOrder = size ? labels(size).map(function (l) { return l.querySelector('input').value; }) : [];
+      var curSize = size ? sizeOrder.indexOf(current(size)) : -1;
+      var best = null, bestScore = -1e9;
+      withDesign(d).forEach(function (e) {
+        var score = 0;
+        others.forEach(function (o) { if (e[o.dataset.editionOptionId] === current(o)) score += 1000; });
+        if (size && curSize > -1) score -= Math.abs(sizeOrder.indexOf(e[size.dataset.editionOptionId]) - curSize);
+        if (score > bestScore) { bestScore = score; best = e; }
+      });
+      return best;
+    }
+
+    design.addEventListener('click', function (ev) {
+      if (busy) return;
+      var l = ev.target.closest('label.t-product__option-item');
+      var input = l && l.querySelector('input');
+      if (!input || input.value === current(design)) return;
+      var target = pick(input.value);
+      if (!target) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      busy = true;
+      // сначала размер/цвет, которых нет в новом оформлении (иначе Tilda не даст его выбрать), потом само оформление
+      others.forEach(function (o) {
+        var v = target[o.dataset.editionOptionId];
+        if (v != null && v !== current(o)) { var ol = labelOf(o, v); if (ol) ol.click(); }
+      });
+      busy = false;
+      // клик по той же кнопке внутри её же клика браузер игнорирует — выбираем оформление следующим тактом
+      setTimeout(function () {
+        busy = true;
+        l.click();
+        busy = false;
+        setTimeout(filter, 0);
+      }, 30);
+    }, true);
+
+    root.addEventListener('change', function () { setTimeout(filter, 0); });
+    filter();
   }
 
   // Картинки в кнопках «Оформления» (если их ещё не поставил скрипт option-images)

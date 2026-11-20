@@ -46,8 +46,9 @@
   background:#801124 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 10.5l2.6 2.6L14 7.7' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/20px no-repeat}
 
 /* Размер: сегменты «S / 25 шт. / 450 AED» */
-.dv-size .t-product__option-variants_buttons{grid-template-columns:repeat(auto-fit,minmax(84px,1fr))}
-.dv-size .t-product__option-item_buttons{padding:12px 8px!important;text-align:center;width:auto!important;height:auto!important}
+/* все размеры всегда в одну строку: колонок столько, сколько вариантов, ширина делится поровну */
+.dv-size .t-product__option-variants_buttons{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px}
+.dv-size .t-product__option-item_buttons{min-width:0;padding:12px 4px!important;text-align:center;width:auto!important;height:auto!important;white-space:nowrap}
 .dv-size .t-product__option-title_buttons{display:flex!important;flex-direction:column;align-items:center;gap:2px;font-size:13px!important;color:var(--dv-muted)}
 .dv-size b{font-size:20px;font-weight:600;color:var(--dv-ink);line-height:1.1}
 .dv-size i{font-style:normal;font-size:13px;color:var(--dv-ink);font-weight:500;margin-top:4px}
@@ -104,8 +105,18 @@
   :is(.t-catalog__prod-popup__col-right,.t-store__prod-popup__col-right){padding-left:20px;margin-top:20px}
   :is(.t-catalog__prod-popup__name,.t-store__prod-popup__name){font-size:26px!important}
   .dv-perks{grid-template-columns:1fr}
+  /* размеры в одну строку и на узком экране: плотнее и мельче */
+  .dv-size .t-product__option-variants_buttons{gap:6px}
+  .dv-size .t-product__option-item_buttons{padding:10px 2px!important}
+  .dv-size .t-product__option-title_buttons{font-size:12px!important}
+  .dv-size b{font-size:18px}
+  .dv-size i{font-size:12px}
   /* липкая плашка с кнопкой */
   :is(.t-catalog__prod-popup__btn-wrapper,.t-store__prod-popup__btn-wrapper){position:sticky;bottom:0;z-index:5;background:#fff;margin:20px 0 0!important}
 }
 /* характеристики товара покупателю не показываем: там служебные поля (Size guide — ссылка на картинку сравнения) */
 .js-store-prod-charcs,.t-typography__characteristics{display:none!important}
+/* оформление — главная опция: Tilda гасит несовместимые значения, а мы оставляем их кликабельными
+   и прячем у остальных опций значения, которых нет в выбранном оформлении */
+.dv-design .t-product__option-item_disabled{opacity:1!important;pointer-events:auto!important}
+.dv-opt-hidden{display:none!important}
