@@ -39,7 +39,8 @@
 /* Оформление: 3 карточки с фото */
 .dv-optimg-on .t-product__option-variants_buttons{grid-template-columns:repeat(3,1fr)}
 .dv-optimg-on .t-product__option-item_buttons{padding:10px 10px 12px!important;gap:8px!important;display:flex!important;flex-direction:column;align-items:center;width:auto!important}
-.dv-optimg-on .dv-optimg{width:100%!important;height:auto!important;aspect-ratio:1;border-radius:0!important;border:1px solid var(--dv-line);box-sizing:border-box;background:var(--dv-soft);object-fit:contain!important}
+/* все фото одной высоты — по самой низкой (пропорцию считает скрипт в --dv-optimg-ratio), без рамки */
+.dv-optimg-on .dv-optimg{width:100%!important;height:auto!important;aspect-ratio:var(--dv-optimg-ratio,1);border-radius:0!important;border:0!important;box-sizing:border-box;background:var(--dv-soft);object-fit:cover!important}
 .dv-optimg-on .t-product__option-title_buttons{font-size:14px!important;font-weight:500}
 .dv-optimg-on .t-product__option-item_active::after{
   content:"";position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;

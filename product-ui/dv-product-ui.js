@@ -51,10 +51,10 @@
   var DESIGN_IMAGES = window.DV_DESIGN_IMAGES || {
     'bouquet': IMG + 'bouquet.jpg',
     'box': IMG + 'box.jpg',
-    'basket': '', // фото корзины пока нет
+    'basket': IMG + 'basket.jpg',
     'букет': IMG + 'bouquet.jpg',
     'коробка': IMG + 'box.jpg',
-    'корзина': ''
+    'корзина': IMG + 'basket.jpg'
   };
 
   // Русские названия опций → английские (только подпись на странице; в корзине Tilda остаётся название из каталога)
@@ -166,6 +166,19 @@
     root.addEventListener('change', function () { setTimeout(render, 0); });
   }
 
+  // Высота всех фото оформления — по самой низкой: пропорция (ширина / высота) самой «широкой» картинки
+  function equalHeights(opt) {
+    var imgs = [].slice.call(opt.querySelectorAll('img.dv-optimg'));
+    function apply() {
+      var ratios = imgs.filter(function (i) { return i.naturalWidth && i.naturalHeight; })
+        .map(function (i) { return i.naturalWidth / i.naturalHeight; });
+      if (ratios.length) opt.style.setProperty('--dv-optimg-ratio', String(Math.max.apply(null, ratios)));
+    }
+    // lazy-картинка может считаться complete ещё до загрузки — слушаем load у всех
+    imgs.forEach(function (i) { i.addEventListener('load', apply); });
+    apply();
+  }
+
   // Оформление (box / bouquet / basket) — главная опция: всегда кликабельна, а у размера, цвета и т. п.
   // показываются только значения, которые есть в выбранном оформлении. Если текущего размера в новом
   // оформлении нет — сначала переключаем на ближайший доступный, потом выбираем оформление.
@@ -275,7 +288,7 @@
       label.setAttribute('data-dv-optimg', '1');
     });
     // ни одного фото — оставляем обычные кнопки без плашек
-    if (used) opt.classList.add('dv-optimg-on');
+    if (used) { opt.classList.add('dv-optimg-on'); equalHeights(opt); }
     else opt.querySelectorAll('.dv-optimg_empty').forEach(function (e) { e.remove(); });
   }
 
