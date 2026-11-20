@@ -186,6 +186,8 @@
         id: p.externalid || String(p.uid),
         uid: String(p.uid),
         title: p.title,
+        // описание из карточки товара в Tilda: краткое, если нет — полное (HTML как в Tilda)
+        descr: String(p.descr || p.text || '').trim(),
         price: parseFloat(p.price) || 0,
         img: gallery[0] && gallery[0].img,
         sku: p.sku || '',
@@ -432,6 +434,7 @@
       '<div class="dv-picker__img"></div>' +
       '<div class="dv-picker__body">' +
         '<div class="dv-picker__title">' + esc(product.title) + '</div>' +
+        (product.descr ? '<div class="dv-picker__descr">' + product.descr + '</div>' : '') +
         '<div class="dv-picker__opts"></div>' +
         '<div class="dv-picker__row">' +
           '<div class="dv-qty"><button type="button" data-q="-1">−</button><span class="dv-qty__val">1</span><button type="button" data-q="1">+</button></div>' +

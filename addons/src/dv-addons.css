@@ -113,6 +113,8 @@
 .dv-picker__body { display: flex; flex-direction: column; }
 .dv-picker__add { margin-top: auto; }
 .dv-picker__title { padding-right: 24px; margin-bottom: 10px; font-size: 18px; font-weight: 600; }
+.dv-picker__descr { margin: -2px 0 14px; font-size: 14px; line-height: 1.5; color: var(--dv-muted); }
+.dv-picker__descr p { margin: 0 0 8px; }
 .dv-opt { margin-bottom: 12px; }
 .dv-opt__title { margin-bottom: 8px; font-size: 13px; color: var(--dv-muted); }
 .dv-opt__title b { color: var(--dv-text); font-weight: 500; }
