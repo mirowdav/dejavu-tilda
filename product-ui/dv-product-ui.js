@@ -44,17 +44,21 @@
   };
   var GUIDE_CHARC = /size\s*guide|как выглядят размеры/i;
 
-  // Картинки опции «Оформление» — одни на все товары (на en-сайте значения bouquet / box / basket).
+  // Картинки опции оформления — одни на все товары (на en-сайте значения bouquet / box / basket).
   // Переопределить: window.DV_DESIGN_IMAGES = { 'bouquet': 'https://...' }
   var DESIGN_OPT = /оформление|design|packaging/i;
+  // Фото лежат в репозитории (product-ui/img/). Нет фото у значения — пустая плашка того же размера.
   var DESIGN_IMAGES = window.DV_DESIGN_IMAGES || {
-    'bouquet': 'https://static.tildacdn.net/tila3732-3932-4766-a338-376638656437/81834943.png',
-    'box': 'https://static.tildacdn.net/tila3465-3930-4262-b762-346661383831/77404157jpg-Photoroo.png',
-    'basket': 'https://static.tildacdn.net/tila6566-3964-4164-a461-626337323965/pure-love-wow-1.png',
-    'букет': 'https://static.tildacdn.net/tila3732-3932-4766-a338-376638656437/81834943.png',
-    'коробка': 'https://static.tildacdn.net/tila3465-3930-4262-b762-346661383831/77404157jpg-Photoroo.png',
-    'корзина': 'https://static.tildacdn.net/tila6566-3964-4164-a461-626337323965/pure-love-wow-1.png'
+    'bouquet': IMG + 'bouquet.jpg',
+    'box': IMG + 'box.jpg',
+    'basket': '', // фото корзины пока нет
+    'букет': IMG + 'bouquet.jpg',
+    'коробка': IMG + 'box.jpg',
+    'корзина': ''
   };
+
+  // Русские названия опций → английские (только подпись на странице; в корзине Tilda остаётся название из каталога)
+  var OPT_NAMES = window.DV_OPTION_NAMES || { 'оформление': 'Style', 'размер': 'Size', 'цвет': 'Color' };
 
   // Данные товара (варианты с ценами, характеристики) Tilda кладёт в код страницы товара: var product = {...};
   function productData() {
@@ -86,12 +90,15 @@
     // Опции: размер — в 3 строки; выбранное значение подписываем только у цвета (у кружков нет текста)
     root.querySelectorAll('.js-product-edition-option').forEach(function (opt) {
       var title = opt.querySelector('.js-product-edition-option-name');
+      // на en-сайте у части товаров опции названы по-русски — показываем английское название
+      if (title && OPT_NAMES[title.textContent.trim().toLowerCase()]) title.textContent = OPT_NAMES[title.textContent.trim().toLowerCase()];
       var isSize = /размер|size/i.test(opt.dataset.editionOptionId || '');
       if (isSize) {
         opt.classList.add('dv-size');
         sizePrices(root, opt, editions, cur);
       }
-      if (DESIGN_OPT.test(opt.dataset.editionOptionId || '')) designImages(opt);
+      // картинки — у любой опции оформления, в т. ч. названной Style (по значениям box / bouquet / basket)
+      if (isDesignOpt(opt)) designImages(opt);
       if (!opt.querySelector('.t-product__option-variants_color')) return;
       var val = document.createElement('span');
       val.className = 'dv-opt-value';
@@ -251,17 +258,25 @@
       if (label.querySelector('.dv-optimg')) { used = true; return; }
       var input = label.querySelector('input'), title = label.querySelector('.t-product__option-title');
       var url = input && DESIGN_IMAGES[input.value.trim().toLowerCase()];
-      if (!url) return;
-      var img = document.createElement('img');
-      img.className = 'dv-optimg';
-      img.src = url;
-      img.alt = input.value;
-      img.loading = 'lazy';
+      var img;
+      if (url) {
+        img = document.createElement('img');
+        img.src = url;
+        img.alt = input.value;
+        img.loading = 'lazy';
+        used = true;
+      } else {
+        // пустая плашка, чтобы кнопки без фото были той же высоты
+        img = document.createElement('span');
+        img.className = 'dv-optimg dv-optimg_empty';
+      }
+      img.className = img.className || 'dv-optimg';
       label.insertBefore(img, title || null);
       label.setAttribute('data-dv-optimg', '1');
-      used = true;
     });
+    // ни одного фото — оставляем обычные кнопки без плашек
     if (used) opt.classList.add('dv-optimg-on');
+    else opt.querySelectorAll('.dv-optimg_empty').forEach(function (e) { e.remove(); });
   }
 
   // Картинка для плашки: из характеристики товара «Size guide»; саму характеристику на странице прячем

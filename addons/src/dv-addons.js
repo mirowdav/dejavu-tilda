@@ -54,6 +54,8 @@
   CFG.texts = Object.assign({}, CFG.texts, (window.DV_ADDONS_CONFIG || {}).texts || {});
 
   var T = CFG.texts;
+  // русские названия опций допов → английские (только подпись в окне допа)
+  var OPT_NAMES = window.DV_OPTION_NAMES || { 'оформление': 'Style', 'размер': 'Size', 'цвет': 'Color' };
   var DATA = null;
   var SKU_MAP = {}; // артикул допа (и его вариантов) → id допа
 
@@ -454,7 +456,7 @@
           '<input class="dv-digits" inputmode="numeric" maxlength="' + (product.maxDigits || 4) + '" placeholder="' + esc(T.digitsPlaceholder) + '" value="' + esc(digits) + '"></div>';
       }
       (product.options || []).forEach(function (o, i) {
-        html += '<div class="dv-opt"><div class="dv-opt__title">' + esc(o.title) + ': <b>' + esc(o.values[sel[i]].name) + '</b></div><div class="dv-opt__values">';
+        html += '<div class="dv-opt"><div class="dv-opt__title">' + esc(OPT_NAMES[String(o.title).trim().toLowerCase()] || o.title) + ': <b>' + esc(o.values[sel[i]].name) + '</b></div><div class="dv-opt__values">';
         o.values.forEach(function (v, vi) {
           var probe = sel.slice(); probe[i] = vi;
           var off = stockFor(product, probe) === 0;

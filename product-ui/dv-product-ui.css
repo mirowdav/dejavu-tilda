@@ -120,3 +120,5 @@
    и прячем у остальных опций значения, которых нет в выбранном оформлении */
 .dv-design .t-product__option-item_disabled{opacity:1!important;pointer-events:auto!important}
 .dv-opt-hidden{display:none!important}
+/* значение оформления без фото (пока корзина) — пустая плашка той же высоты */
+.dv-optimg_empty{display:block}
