@@ -28,6 +28,7 @@
     // только после разбора страницы: данные товара (var product) Tilda кладёт ниже разметки,
     // а скрипт может стоять в HEAD
     function start() {
+      porCart();
       run();
       // карточка дорисовывается Tilda асинхронно
       var tries = 0, t = setInterval(function () { run(); if (++tries > 20) clearInterval(t); }, 300);
@@ -59,6 +60,21 @@
 
   // Русские названия опций → английские (только подпись на странице; в корзине Tilda остаётся название из каталога)
   var OPT_NAMES = window.DV_OPTION_NAMES || { 'оформление': 'Style', 'размер': 'Size', 'цвет': 'Color' };
+
+  // Фиксированный набор размеров у каждого оформления. Размеры, которых нет в Tilda, дорисовываются
+  // с «Price on request» и кладутся в корзину без цены (артикул POR-…); размеры вне набора остаются.
+  var SIZE_SETS = window.DV_SIZE_SETS || {
+    'basket': ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'],
+    'bouquet': ['S', 'M', 'L'],
+    'box': ['S', 'M', 'L', 'XL']
+  };
+  SIZE_SETS['корзина'] = SIZE_SETS['корзина'] || SIZE_SETS.basket;
+  SIZE_SETS['букет'] = SIZE_SETS['букет'] || SIZE_SETS.bouquet;
+  SIZE_SETS['коробка'] = SIZE_SETS['коробка'] || SIZE_SETS.box;
+  var SIZE_RANK = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'XXXXL'];
+  var POR = { button: 'On request', price: 'Price on request', option: 'Price', variant: 'on request', sku: 'POR-' };
+  // способы оплаты, которые прячем, если в корзине есть позиция «по запросу»
+  var POR_BLOCK_PAY = window.DV_POR_BLOCK_PAY || ['stripe'];
 
   // Данные товара (варианты с ценами, характеристики) Tilda кладёт в код страницы товара: var product = {...};
   function productData() {
@@ -113,6 +129,7 @@
     });
 
     designFirst(root, editions);
+    porSizes(root, data, editions);
 
     // Преимущества под кнопкой
     var btns =root.querySelector('.t-catalog__prod-popup__btn-wrapper, .t-store__prod-popup__btn-wrapper');
@@ -159,7 +176,7 @@
         var input = it.querySelector('input'), t = it.querySelector('.t-product__option-title_buttons');
         if (!input || !t) return;
         var v = input.value, m = v.match(/^\s*(\S+)\s*[—–-]\s*(.+)$/), p = price(v);
-        t.innerHTML = '<b>' + (m ? m[1] : v) + '</b>' + (m ? m[2] : '') + (p ? '<i>' + p + ' ' + cur + '</i>' : '');
+        t.innerHTML = '<b>' + (m ? m[1] : v) + '</b>' + (m ? m[2] : '') + (p ? '<i>' + p.replace(/\s/g, ' ') + ' ' + cur + '</i>' : '');
       });
     }
     render();
@@ -223,13 +240,21 @@
     // при равенстве — ближайший по порядку кнопок размер
     function pick(d) {
       var size = others.filter(function (o) { return o.classList.contains('dv-size'); })[0];
+      // близость размеров — по букве (S, M, L…): у разных оформлений значения разные («S — 11 pcs» / «S — 25 pcs»)
       var sizeOrder = size ? labels(size).map(function (l) { return l.querySelector('input').value; }) : [];
-      var curSize = size ? sizeOrder.indexOf(current(size)) : -1;
+      var rank = function (v) { return sizeRank(sizeLetter(v), sizeOrder.indexOf(v)); };
+      var curSize = size && current(size) ? rank(current(size)) : -1;
+      // выбран дорисованный размер «по запросу» — ближайший ищем к нему
+      var por = root.dataset.dvPorSize;
+      if (size && por) curSize = sizeRank(por, 0);
       var best = null, bestScore = -1e9;
       withDesign(d).forEach(function (e) {
         var score = 0;
-        others.forEach(function (o) { if (e[o.dataset.editionOptionId] === current(o)) score += 1000; });
-        if (size && curSize > -1) score -= Math.abs(sizeOrder.indexOf(e[size.dataset.editionOptionId]) - curSize);
+        others.forEach(function (o) {
+          if (por && o === size) return;
+          if (e[o.dataset.editionOptionId] === current(o)) score += 1000;
+        });
+        if (size && curSize > -1) score -= Math.abs(rank(e[size.dataset.editionOptionId]) - curSize);
         if (score > bestScore) { bestScore = score; best = e; }
       });
       return best;
@@ -262,6 +287,211 @@
 
     root.addEventListener('change', function () { setTimeout(filter, 0); });
     filter();
+  }
+
+  // Фиксированный набор размеров у оформления (SIZE_SETS): недостающие размеры дорисовываем своими кнопками.
+  // Tilda про них не знает: выбор настоящего варианта не меняется, а «В корзину» кладёт позицию без цены
+  // (артикул POR-…, опция Price: on request) через tcart__addProduct.
+  function sizeLetter(v) { return String(v || '').trim().split(/\s+/)[0].toUpperCase(); }
+  function sizeRank(letter, fallback) { var i = SIZE_RANK.indexOf(letter); return i > -1 ? i : 50 + fallback; }
+  function optName(key) { return OPT_NAMES[String(key).toLowerCase()] || key; }
+
+  function porSizes(root, data, editions) {
+    var opts = [].slice.call(root.querySelectorAll('.js-product-edition-option'));
+    var design = opts.filter(isDesignOpt)[0];
+    var size = root.querySelector('.dv-size');
+    var form = size && size.querySelector('.t-product__option-variants_buttons');
+    if (!design || !form) return;
+    var real = [].slice.call(form.querySelectorAll('label.t-product__option-item'));
+    if (!real.length) return;
+    var fake = {}, picked = null, cur = null;
+
+    function current(opt) {
+      var a = opt.querySelector('.t-product__option-item_active input') || opt.querySelector('input:checked');
+      return a ? a.value : null;
+    }
+    function visibleReal(letter) {
+      return real.filter(function (l) {
+        var i = l.querySelector('input');
+        return i && sizeLetter(i.value) === letter && !l.classList.contains('dv-opt-hidden');
+      })[0];
+    }
+    function makeFake(letter) {
+      var el = real[0].cloneNode(true);
+      var input = el.querySelector('input');
+      if (input) input.remove();
+      // без класса t-product__option-item — обработчики Tilda и наш designFirst её не видят
+      el.className = 't-product__option-item_buttons t-product__option-item_simple dv-por-item';
+      el.removeAttribute('style');
+      var t = el.querySelector('.t-product__option-title_buttons') || el;
+      t.innerHTML = '<b>' + letter + '</b><i>' + POR.button + '</i>';
+      el.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        picked = letter;
+        update();
+      });
+      form.appendChild(el);
+      return el;
+    }
+
+    function update() {
+      var d = current(design);
+      var set = SIZE_SETS[String(d || '').trim().toLowerCase()] || [];
+      // выбранный дорисованный размер теперь есть в Tilda (сменили оформление) — выбираем настоящий
+      if (picked && set.indexOf(picked) === -1) picked = null;
+      if (picked && visibleReal(picked)) {
+        var l = visibleReal(picked);
+        picked = null;
+        if (!l.classList.contains('t-product__option-item_active')) setTimeout(function () { l.click(); }, 0);
+      }
+      Object.keys(fake).forEach(function (k) { fake[k].classList.add('dv-opt-hidden'); });
+      set.forEach(function (letter) {
+        if (visibleReal(letter)) return;
+        var f = fake[letter] || (fake[letter] = makeFake(letter));
+        f.classList.remove('dv-opt-hidden');
+      });
+      // порядок кнопок — по размеру (S, M, L…), а не как заведено в Tilda
+      real.forEach(function (l, i) { l.style.order = sizeRank(sizeLetter(l.querySelector('input').value), i); });
+      Object.keys(fake).forEach(function (k) {
+        fake[k].style.order = sizeRank(k, 0);
+        fake[k].classList.toggle('dv-por-active', k === picked);
+      });
+      root.classList.toggle('dv-por-on', !!picked);
+      root.dataset.dvPorSize = picked || '';
+      cur = picked;
+    }
+
+    // цена «Price on request» вместо цены варианта
+    var priceBox = root.querySelector('.t-catalog__prod-popup__price, .t-store__prod-popup__price');
+    if (priceBox && !priceBox.querySelector('.dv-por-price')) {
+      var pp = document.createElement('span');
+      pp.className = 'dv-por-price';
+      pp.textContent = POR.price;
+      priceBox.appendChild(pp);
+    }
+
+    // клик по настоящему размеру снимает дорисованный
+    form.addEventListener('click', function (ev) {
+      if (ev.target.closest('label.t-product__option-item') && picked) { picked = null; update(); }
+    }, true);
+    root.addEventListener('change', function () { setTimeout(update, 0); });
+
+    // «В корзину» при дорисованном размере — своя позиция без цены
+    root.addEventListener('click', function (ev) {
+      if (!cur) return;
+      var btn = ev.target.closest('.t-catalog__prod-popup__btn, .t-store__prod-popup__btn, .js-store-prod-popup-buy-btn, [href="#order"]');
+      if (!btn || !root.contains(btn)) return;
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+      addPor(root, data, editions, opts, design, size, cur);
+    }, true);
+
+    update();
+  }
+
+  function addPor(root, data, editions, opts, design, size, letter) {
+    if (typeof window.tcart__addProduct !== 'function') return;
+    var sel = {};
+    opts.forEach(function (o) {
+      var a = o.querySelector('.t-product__option-item_active input') || o.querySelector('input:checked');
+      if (a) sel[o.dataset.editionOptionId] = a.value;
+    });
+    var dKey = design.dataset.editionOptionId, sKey = size.dataset.editionOptionId;
+    sel[sKey] = letter;
+    // фото — варианта с тем же оформлением (и цветом, если совпадает)
+    var same = editions.filter(function (e) { return e[dKey] === sel[dKey] && e.img; });
+    var best = same.filter(function (e) {
+      return Object.keys(sel).every(function (k) { return k === sKey || e[k] === sel[k]; });
+    })[0] || same[0] || editions.filter(function (e) { return e.img; })[0];
+    var name = root.querySelector('.js-product-name');
+    var qtyInput = root.querySelector('input[class*="quantity-input"], .t-store__prod__quantity input, .t-catalog__prod__quantity input');
+    var qty = Math.max(1, parseInt(qtyInput && qtyInput.value, 10) || 1);
+    var options = opts.map(function (o) {
+      var k = o.dataset.editionOptionId;
+      return sel[k] != null ? { option: optName(k), variant: sel[k] } : null;
+    }).filter(Boolean);
+    options.push({ option: POR.option, variant: POR.variant });
+    window.tcart__addProduct({
+      name: name ? name.textContent.trim() : (data.title || ''),
+      price: 0,
+      quantity: qty,
+      img: best ? best.img : '',
+      sku: POR.sku + (data.uid || '') + '-' + String(sel[dKey]).toLowerCase() + '-' + letter,
+      url: location.href.split('#')[0].split('?')[0],
+      options: options
+    });
+    if (typeof window.tcart__openCart === 'function') window.tcart__openCart();
+  }
+
+  // Корзина (на всех страницах): у позиций «по запросу» вместо пустой цены — «Price on request»,
+  // и пока они в корзине, Stripe скрыт и выбрана оплата наличными. Скрытие — через ту же проверку,
+  // которой Tilda отключает способы оплаты для доставки (tcart__isPaymentUnavailable).
+  function isPor(p) { return !!p && p.deleted !== 'yes' && String(p.sku || '').indexOf(POR.sku) === 0; }
+  function cartHasPor() { return ((window.tcart && window.tcart.products) || []).some(isPor); }
+
+  function porCart() {
+    if (window.__dvPorCart) return;
+    window.__dvPorCart = true;
+    var syncing = false, forced = false;
+
+    function labelRows() {
+      var products = (window.tcart && window.tcart.products) || [];
+      document.querySelectorAll('.t706__product[data-cart-product-i]').forEach(function (row) {
+        if (!isPor(products[+row.getAttribute('data-cart-product-i')])) return;
+        row.classList.add('dv-por-row');
+        row.querySelectorAll('.t706__product-amount').forEach(function (a) {
+          if (a.textContent.trim() !== POR.price) a.textContent = POR.price;
+        });
+        // служебный артикул под названием не показываем
+        row.querySelectorAll('.t706__product-title__option').forEach(function (o) {
+          if (o.textContent.trim().indexOf(POR.sku) === 0) o.style.display = 'none';
+        });
+      });
+    }
+    function syncPay() {
+      if (syncing || typeof window.tcart__syncPaymentMethodsForDelivery !== 'function') return;
+      var blocked = document.querySelector('.t706 .t-radio__wrapper-payment input[data-payment-variant-system="' + POR_BLOCK_PAY[0] + '"]');
+      if (!blocked) return;
+      var por = cartHasPor();
+      // пересчитываем, только если видимость не совпадает с тем, что нужно
+      if (por === blocked.disabled) return;
+      syncing = true;
+      try {
+        window.tcart__syncPaymentMethodsForDelivery();
+        // позицию «по запросу» убрали — возвращаем выбор по умолчанию (Stripe), а не оставленные нами наличные
+        if (!por && forced && !blocked.disabled && !blocked.checked) {
+          blocked.click();
+        }
+        forced = por;
+      } finally { syncing = false; }
+    }
+    function refresh() { labelRows(); syncPay(); }
+    function wrap(name) {
+      var orig = window[name];
+      if (typeof orig !== 'function' || orig.__dvPor) return typeof orig === 'function';
+      var w = function () { var r = orig.apply(this, arguments); try { refresh(); } catch (e) { /* корзина важнее */ } return r; };
+      w.__dvPor = true;
+      window[name] = w;
+      return true;
+    }
+
+    var tries = 0;
+    (function hook() {
+      var orig = window.tcart__isPaymentUnavailable;
+      if (typeof orig === 'function' && !orig.__dvPor) {
+        var w = function (sys) {
+          if (POR_BLOCK_PAY.indexOf(sys) > -1 && cartHasPor()) return true;
+          return orig.apply(this, arguments);
+        };
+        w.__dvPor = true;
+        window.tcart__isPaymentUnavailable = w;
+      }
+      var ok = typeof orig === 'function';
+      ['tcart__reDrawProducts', 'tcart__reDrawTotal'].forEach(function (n) { ok = wrap(n) && ok; });
+      if (ok) refresh();
+      else if (++tries < 40) setTimeout(hook, 250);
+    })();
+    document.addEventListener('fullscreenCartOpened', function () { setTimeout(refresh, 0); });
   }
 
   // Картинки в кнопках «Оформления» (если их ещё не поставил скрипт option-images)

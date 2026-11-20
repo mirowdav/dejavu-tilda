@@ -123,3 +123,16 @@
 .dv-opt-hidden{display:none!important}
 /* значение оформления без фото (пока корзина) — пустая плашка той же высоты */
 .dv-optimg_empty{display:block}
+
+/* Размеры «по запросу» (дорисованные скриптом, SIZE_SETS) */
+.dv-por-item{cursor:pointer;opacity:1!important;pointer-events:auto!important}
+.dv-size .dv-por-item i{white-space:normal;line-height:1.15;color:var(--dv-muted);font-weight:400}
+.dv-por-on.dv-por-on .dv-size .t-product__option-item_simple.t-product__option-item_active{border-color:var(--dv-line)!important}
+.dv-por-item.dv-por-active{border-color:#801124!important}
+.dv-por-price{display:none}
+.dv-por-on .dv-por-price{display:inline}
+.dv-por-on :is(.t-catalog__prod-popup__price,.t-store__prod-popup__price) > :not(.dv-por-price),
+.dv-por-on :is(.t-catalog__prod-popup__price_old,.t-store__prod-popup__price_old){display:none!important}
+.t706__product.dv-por-row .t706__product-amount{white-space:nowrap;font-size:13px}
+/* много размеров в ряд (у корзин 6) — валюта переносится под число, а не обрезается */
+.dv-size i{white-space:normal;line-height:1.2}
