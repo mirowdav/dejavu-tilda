@@ -144,6 +144,19 @@
 
     buildGuide(root, guideImg(root, data));
 
+    // после «В корзину» сразу открываем предпросмотр корзины (боковая панель; на телефоне Tilda — страница корзины),
+    // только если товар действительно добавился (Tilda могла не добавить: не выбрана опция, нет в наличии)
+    if (btns) {
+      btns.addEventListener('click', function (ev) {
+        if (!ev.target.closest('.t-catalog__prod-popup__btn, .t-store__prod-popup__btn, [href="#order"]')) return;
+        var before = cartCount();
+        setTimeout(function () {
+          var shown = /t706__body_cart(sidebar|page|win)showed/.test(document.body.className);
+          if (!shown && cartCount() > before && typeof window.tcart__openCart === 'function') window.tcart__openCart();
+        }, 300);
+      });
+    }
+
     // Полку допов (её рисует addons в конце колонки, позже нас) ставим после опций, перед количеством/кнопкой
     if (btns) {
       var placeShelf = function () {
@@ -517,6 +530,11 @@
   // Корзина (на всех страницах): у позиций «по запросу» вместо пустой цены — «Price on request»,
   // и пока они в корзине, Stripe скрыт и выбрана оплата наличными. Скрытие — через ту же проверку,
   // которой Tilda отключает способы оплаты для доставки (tcart__isPaymentUnavailable).
+  function cartCount() {
+    return ((window.tcart && window.tcart.products) || []).reduce(function (n, p) {
+      return n + (p && p.deleted !== 'yes' ? (+p.quantity || 0) : 0);
+    }, 0);
+  }
   function isPor(p) { return !!p && p.deleted !== 'yes' && String(p.sku || '').indexOf(POR.sku) === 0; }
   function cartHasPor() { return ((window.tcart && window.tcart.products) || []).some(isPor); }
 
@@ -588,7 +606,11 @@
   // Картинки в кнопках «Оформления» (если их ещё не поставил скрипт option-images)
   function designImages(opt) {
     var used = false;
-    opt.querySelectorAll('label.t-product__option-item').forEach(function (label) {
+    opt.querySelectorAll('label.t-product__option-item').forEach(function (label, n) {
+      // порядок всегда bouquet → box → basket, как бы ни были заведены варианты в Tilda
+      var iv = label.querySelector('input');
+      var k = iv ? STYLES.indexOf(styleKey(iv.value)) : -1;
+      label.style.order = k > -1 ? k : 10 + n;
       if (label.querySelector('.dv-optimg')) { used = true; return; }
       var input = label.querySelector('input'), title = label.querySelector('.t-product__option-title');
       var url = input && DESIGN_IMAGES[input.value.trim().toLowerCase()];
