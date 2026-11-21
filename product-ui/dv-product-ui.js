@@ -289,60 +289,127 @@
     filter();
   }
 
-  // Фиксированный набор размеров у оформления (SIZE_SETS): недостающие размеры дорисовываем своими кнопками.
-  // Tilda про них не знает: выбор настоящего варианта не меняется, а «В корзину» кладёт позицию без цены
-  // (артикул POR-…, опция Price: on request) через tcart__addProduct.
+  // Фиксированные наборы: у цветочного товара всегда три оформления (STYLES), у каждого — свой набор
+  // размеров (SIZE_SETS). Что заведено в Tilda — остаётся как есть; чего нет — дорисовываем «On request».
+  // Tilda про дорисованное не знает: её выбор варианта не меняется, а «В корзину» кладёт позицию без цены
+  // (артикул POR-…, опция Price: on request) через tcart__addProduct. Допы (раздел Add-ons) не трогаем.
+  var STYLES = ['bouquet', 'box', 'basket'];
+  var STYLE_ALIAS = { 'букет': 'bouquet', 'коробка': 'box', 'корзина': 'basket' };
+  // у товара без опции оформления его варианты из Tilda считаем этим оформлением
+  var DEFAULT_STYLE = window.DV_DEFAULT_STYLE || 'bouquet';
+  var ADDON_PART = '722035005904';
+  function styleKey(v) { v = String(v || '').trim().toLowerCase(); return STYLE_ALIAS[v] || v; }
   function sizeLetter(v) { return String(v || '').trim().split(/\s+/)[0].toUpperCase(); }
   function sizeRank(letter, fallback) { var i = SIZE_RANK.indexOf(letter); return i > -1 ? i : 50 + fallback; }
   function optName(key) { return OPT_NAMES[String(key).toLowerCase()] || key; }
+  function isAddonProduct(data, editions) {
+    return (data.partuids || []).map(String).indexOf(ADDON_PART) > -1 ||
+      editions.some(function (e) { return /^DOP-/.test(e.sku || ''); });
+  }
+  function nearestLetter(set, letter) {
+    var r = sizeRank(letter, 0), best = set[0];
+    set.forEach(function (l) { if (Math.abs(sizeRank(l, 0) - r) < Math.abs(sizeRank(best, 0) - r)) best = l; });
+    return best;
+  }
+
+  // своя опция «Style» для товара, у которого её нет в Tilda (разметка — как у опций Tilda, но без js-классов)
+  function buildStyleOpt(size, opts) {
+    var o = document.createElement('div');
+    o.className = 't-product__option dv-design dv-style-fake';
+    var title = size.querySelector('.js-product-edition-option-name');
+    var t = document.createElement('div');
+    t.className = title ? title.className.replace('js-product-edition-option-name', '').trim() : 't-product__option-title';
+    t.textContent = 'Style';
+    var f = size.querySelector('.t-product__option-variants_buttons').cloneNode(false);
+    o.appendChild(t);
+    o.appendChild(f);
+    var last = opts[opts.length - 1];
+    last.parentNode.insertBefore(o, last.nextSibling);
+    return o;
+  }
+
+  function fakeItem(template, html) {
+    var el = template.cloneNode(true);
+    el.querySelectorAll('input, .dv-optimg').forEach(function (x) { x.remove(); });
+    // без класса t-product__option-item — обработчики Tilda и наш designFirst её не видят
+    el.className = 't-product__option-item_buttons t-product__option-item_simple dv-por-item';
+    el.removeAttribute('style');
+    el.removeAttribute('data-dv-optimg');
+    var t = el.querySelector('.t-product__option-title_buttons') || el.querySelector('.t-product__option-title') || el;
+    t.innerHTML = html;
+    return el;
+  }
 
   function porSizes(root, data, editions) {
     var opts = [].slice.call(root.querySelectorAll('.js-product-edition-option'));
-    var design = opts.filter(isDesignOpt)[0];
     var size = root.querySelector('.dv-size');
     var form = size && size.querySelector('.t-product__option-variants_buttons');
-    if (!design || !form) return;
+    if (!form || isAddonProduct(data, editions)) return;
     var real = [].slice.call(form.querySelectorAll('label.t-product__option-item'));
     if (!real.length) return;
-    var fake = {}, picked = null, cur = null;
+    var design = opts.filter(isDesignOpt)[0];
+    var dOpt = design || buildStyleOpt(size, opts);
+    var dForm = dOpt.querySelector('.t-product__option-variants_buttons');
+    if (!dForm) return;
+    var dReal = design ? [].slice.call(dForm.querySelectorAll('label.t-product__option-item')) : [];
+    var fake = {}, styleItems = {}, picked = null, fakeStyle = null, cur = null, curStyle = null;
 
     function current(opt) {
       var a = opt.querySelector('.t-product__option-item_active input') || opt.querySelector('input:checked');
       return a ? a.value : null;
     }
+    function realStyle() { return design ? styleKey(current(design)) : DEFAULT_STYLE; }
     function visibleReal(letter) {
+      if (fakeStyle) return null;
       return real.filter(function (l) {
         var i = l.querySelector('input');
         return i && sizeLetter(i.value) === letter && !l.classList.contains('dv-opt-hidden');
       })[0];
     }
     function makeFake(letter) {
-      var el = real[0].cloneNode(true);
-      var input = el.querySelector('input');
-      if (input) input.remove();
-      // без класса t-product__option-item — обработчики Tilda и наш designFirst её не видят
-      el.className = 't-product__option-item_buttons t-product__option-item_simple dv-por-item';
-      el.removeAttribute('style');
-      var t = el.querySelector('.t-product__option-title_buttons') || el;
-      t.innerHTML = '<b>' + letter + '</b><i>' + POR.button + '</i>';
-      el.addEventListener('click', function (ev) {
-        ev.preventDefault();
-        picked = letter;
-        update();
-      });
+      var el = fakeItem(real[0], '<b>' + letter + '</b><i>' + POR.button + '</i>');
+      el.addEventListener('click', function (ev) { ev.preventDefault(); picked = letter; update(); });
       form.appendChild(el);
       return el;
     }
 
+    // кнопки оформлений, которых нет в Tilda (у товара без опции — все три, «родное» — DEFAULT_STYLE)
+    var have = dReal.map(function (l) { return styleKey(l.querySelector('input').value); });
+    STYLES.forEach(function (s) {
+      if (have.indexOf(s) > -1) return;
+      var el = fakeItem(dReal[0] || real[0], s);
+      var url = DESIGN_IMAGES[s];
+      var img = document.createElement(url ? 'img' : 'span');
+      if (url) { img.src = url; img.alt = s; img.loading = 'lazy'; img.className = 'dv-optimg'; }
+      else img.className = 'dv-optimg dv-optimg_empty';
+      el.insertBefore(img, el.firstChild);
+      el.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        var keep = picked || (current(size) ? sizeLetter(current(size)) : null);
+        fakeStyle = (!design && s === DEFAULT_STYLE) ? null : s;
+        if (fakeStyle) picked = keep;
+        update();
+      });
+      dForm.appendChild(el);
+      styleItems[s] = el;
+    });
+    dOpt.classList.add('dv-optimg-on');
+    equalHeights(dOpt);
+
     function update() {
-      var d = current(design);
-      var set = SIZE_SETS[String(d || '').trim().toLowerCase()] || [];
-      // выбранный дорисованный размер теперь есть в Tilda (сменили оформление) — выбираем настоящий
-      if (picked && set.indexOf(picked) === -1) picked = null;
-      if (picked && visibleReal(picked)) {
-        var l = visibleReal(picked);
-        picked = null;
-        if (!l.classList.contains('t-product__option-item_active')) setTimeout(function () { l.click(); }, 0);
+      var st = fakeStyle || realStyle();
+      var set = SIZE_SETS[st] || [];
+      real.forEach(function (l) { l.classList.toggle('dv-por-hide', !!fakeStyle); });
+      if (fakeStyle) {
+        // у дорисованного оформления все размеры «по запросу»
+        if (!picked || set.indexOf(picked) === -1) picked = set.length ? nearestLetter(set, picked || 'M') : null;
+      } else {
+        if (picked && set.indexOf(picked) === -1) picked = null;
+        var rl = picked && visibleReal(picked);
+        if (rl) {
+          picked = null;
+          if (!rl.classList.contains('t-product__option-item_active')) setTimeout(function () { rl.click(); }, 0);
+        }
       }
       Object.keys(fake).forEach(function (k) { fake[k].classList.add('dv-opt-hidden'); });
       set.forEach(function (letter) {
@@ -350,15 +417,25 @@
         var f = fake[letter] || (fake[letter] = makeFake(letter));
         f.classList.remove('dv-opt-hidden');
       });
-      // порядок кнопок — по размеру (S, M, L…), а не как заведено в Tilda
+      // порядок: размеры S → XXXL, оформления bouquet / box / basket
       real.forEach(function (l, i) { l.style.order = sizeRank(sizeLetter(l.querySelector('input').value), i); });
       Object.keys(fake).forEach(function (k) {
         fake[k].style.order = sizeRank(k, 0);
         fake[k].classList.toggle('dv-por-active', k === picked);
       });
+      dReal.forEach(function (l, i) {
+        var k = STYLES.indexOf(styleKey(l.querySelector('input').value));
+        l.style.order = k > -1 ? k : 10 + i;
+      });
+      Object.keys(styleItems).forEach(function (s) {
+        styleItems[s].style.order = STYLES.indexOf(s);
+        styleItems[s].classList.toggle('dv-por-active', s === st);
+      });
+      root.classList.toggle('dv-por-style', !!fakeStyle);
       root.classList.toggle('dv-por-on', !!picked);
       root.dataset.dvPorSize = picked || '';
       cur = picked;
+      curStyle = st;
     }
 
     // цена «Price on request» вместо цены варианта
@@ -370,9 +447,18 @@
       priceBox.appendChild(pp);
     }
 
-    // клик по настоящему размеру снимает дорисованный
+    // клик по настоящему размеру снимает дорисованный, по настоящему оформлению — дорисованное оформление
     form.addEventListener('click', function (ev) {
-      if (ev.target.closest('label.t-product__option-item') && picked) { picked = null; update(); }
+      // при дорисованном оформлении настоящие размеры скрыты — их кликает только designFirst при смене оформления
+      if (ev.target.closest('label.t-product__option-item') && picked && !fakeStyle) { picked = null; update(); }
+    }, true);
+    // на самой опции: designFirst слушает её же и останавливает всплытие дальше
+    dOpt.addEventListener('click', function (ev) {
+      if (ev.target.closest('label.t-product__option-item') && fakeStyle) {
+        fakeStyle = null;
+        // то же оформление, что выбрано в Tilda, — события change не будет
+        setTimeout(update, 50);
+      }
     }, true);
     root.addEventListener('change', function () { setTimeout(update, 0); });
 
@@ -383,26 +469,30 @@
       if (!btn || !root.contains(btn)) return;
       ev.preventDefault();
       ev.stopImmediatePropagation();
-      addPor(root, data, editions, opts, design, size, cur);
+      addPor(root, data, editions, opts, design, size, curStyle, cur);
     }, true);
 
     update();
   }
 
-  function addPor(root, data, editions, opts, design, size, letter) {
+  function addPor(root, data, editions, opts, design, size, style, letter) {
     if (typeof window.tcart__addProduct !== 'function') return;
     var sel = {};
     opts.forEach(function (o) {
       var a = o.querySelector('.t-product__option-item_active input') || o.querySelector('input:checked');
       if (a) sel[o.dataset.editionOptionId] = a.value;
     });
-    var dKey = design.dataset.editionOptionId, sKey = size.dataset.editionOptionId;
+    var dKey = design ? design.dataset.editionOptionId : null, sKey = size.dataset.editionOptionId;
+    // фото — варианта с тем же цветом и оформлением; нет такого — с тем же цветом; иначе любое
+    var withImg = editions.filter(function (e) { return e.img; });
+    var match = function (skip) {
+      return withImg.filter(function (e) {
+        return Object.keys(sel).every(function (k) { return skip.indexOf(k) > -1 || e[k] === sel[k]; });
+      })[0];
+    };
+    var best = match([sKey]) || match([sKey, dKey]) || withImg[0];
+    if (dKey) sel[dKey] = style;
     sel[sKey] = letter;
-    // фото — варианта с тем же оформлением (и цветом, если совпадает)
-    var same = editions.filter(function (e) { return e[dKey] === sel[dKey] && e.img; });
-    var best = same.filter(function (e) {
-      return Object.keys(sel).every(function (k) { return k === sKey || e[k] === sel[k]; });
-    })[0] || same[0] || editions.filter(function (e) { return e.img; })[0];
     var name = root.querySelector('.js-product-name');
     var qtyInput = root.querySelector('input[class*="quantity-input"], .t-store__prod__quantity input, .t-catalog__prod__quantity input');
     var qty = Math.max(1, parseInt(qtyInput && qtyInput.value, 10) || 1);
@@ -410,13 +500,14 @@
       var k = o.dataset.editionOptionId;
       return sel[k] != null ? { option: optName(k), variant: sel[k] } : null;
     }).filter(Boolean);
+    if (!dKey) options.push({ option: 'Style', variant: style });
     options.push({ option: POR.option, variant: POR.variant });
     window.tcart__addProduct({
       name: name ? name.textContent.trim() : (data.title || ''),
       price: 0,
       quantity: qty,
       img: best ? best.img : '',
-      sku: POR.sku + (data.uid || '') + '-' + String(sel[dKey]).toLowerCase() + '-' + letter,
+      sku: POR.sku + (data.uid || '') + '-' + style + '-' + letter,
       url: location.href.split('#')[0].split('?')[0],
       options: options
     });

@@ -42,7 +42,7 @@
 /* все фото одной высоты — по самой низкой (пропорцию считает скрипт в --dv-optimg-ratio), без рамки */
 .dv-optimg-on .dv-optimg{width:100%!important;height:auto!important;aspect-ratio:var(--dv-optimg-ratio,1);border-radius:0!important;border:0!important;box-sizing:border-box;background:var(--dv-soft);object-fit:cover!important}
 .dv-optimg-on .t-product__option-title_buttons{font-size:14px!important;font-weight:500}
-.dv-optimg-on .t-product__option-item_active::after{
+.dv-optimg-on .t-product__option-item_active::after,.dv-optimg-on .dv-por-item.dv-por-active::after{
   content:"";position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;
   background:#801124 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 10.5l2.6 2.6L14 7.7' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/20px no-repeat}
 
@@ -136,3 +136,8 @@
 .t706__product.dv-por-row .t706__product-amount{white-space:nowrap;font-size:13px}
 /* много размеров в ряд (у корзин 6) — валюта переносится под число, а не обрезается */
 .dv-size i{white-space:normal;line-height:1.2}
+/* дорисованные оформления (bouquet / box / basket, которых нет в Tilda) */
+.dv-por-hide{display:none!important}
+.dv-optimg-on .dv-por-item{position:relative}
+.dv-por-style.dv-por-style .dv-design .t-product__option-item_simple.t-product__option-item_active{border-color:var(--dv-line)!important}
+.dv-por-style .dv-design .t-product__option-item_active::after{display:none}

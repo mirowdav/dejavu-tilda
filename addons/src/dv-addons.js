@@ -27,6 +27,8 @@
     currency: 'AED',
     // показывать попап после добавления основного товара
     upsellPopup: false, // выключен по просьбе клиента (01.11.2026): допы и так в карточке и в корзине
+    // полка «Complete your gift» в карточке товара; выключена 21.11.2026 — допы только в корзине
+    productShelf: false,
     // подсказка размера под переключателем: { 'Size': { 'M — 51 pcs': '40 × 35 cm' } }
     variantHints: {},
     texts: {
@@ -547,6 +549,7 @@
         if (addon.type === 'digits') enhanceDigitsCard(card, btnWrap, addon);
         return;
       }
+      if (!CFG.productShelf) return;
 
       var hintsEl = el('<div class="dv-variant-hint"></div>');
       var plaque = el('<a href="#" class="dv-hint">' + esc(T.hint) + ' →</a>');
